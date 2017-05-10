@@ -55,11 +55,7 @@ while finish <= letter_cnt:
 # print(p)
 count = 0
 for key in temp:
-    if key in letter.keys():
-        result.append(letter[key])
-    elif key not in letter.keys():
-
-        for i in range(8):
+           for i in range(8):
             cnt = 0
             # count = 0
 
@@ -108,6 +104,7 @@ for key in temp:
 #         print(key)
 
 print(''.join(result))
+print(count)
 
 # 종료 시간 체크
 etime = time.time()
