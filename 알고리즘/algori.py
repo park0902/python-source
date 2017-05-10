@@ -105,6 +105,7 @@ for key in temp:
 
 print(''.join(result))
 print(count)
+print()
 
 # 종료 시간 체크
 etime = time.time()
