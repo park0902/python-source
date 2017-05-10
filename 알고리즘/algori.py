@@ -45,51 +45,61 @@ temp =[]
 start = 0
 finish = 6
 cnt = 0
-result = ''
-# result = []
+# result = ''
+result = []
 while finish <= letter_cnt:
     temp.append(letter_num[start:finish])
     start += 6
     finish += 6
 
-print(p)
+# print(p)
+count = 0
+for key in temp:
+    if key in letter.keys():
+        result.append(letter[key])
+    elif key not in letter.keys():
+
+        for i in range(8):
+            cnt = 0
+            # count = 0
+
+            for j in range(6):
+                # print(key)
+
+                if key[j] == p[i][j]:
+                    cnt += 1
+                    # print(count)
+                    # print(key[j],'-',p[i][j])
+                    # print(cnt)
+                    if cnt == 5:
+                        count += 1
+                        result.append(letter[p[i]])
+                        # print(cnt)
+
+                    # elif cnt < 5:
+
+
+
 
 # for key in temp:
 #     if key in letter.keys():
-#         result.append(letter[key])
+#         result += letter[key]
+#         # print(result,'=')
 #     elif key not in letter.keys():
-#         for i in range(8):
+#         for i in range(len(key)):
 #             cnt = 0
-#             count = 0
-#             for j in range(6):
+#             ct = 0
+#             for j in range(len(key)):
 #                 # print(key)
 #                 if key[j] == p[i][j]:
 #                     cnt += 1
-#                     count += 1
+#                     ct += 1
 #                     # print(key[j],'-',p[i][j])
-#                     # print(cnt)
-#                     if cnt == 5:
-#                         result.append(letter[p[i]])
-#         if cnt != 5:
-#             result += str(count)
-
-
-for key in temp:
-    if key in letter.keys():
-        result += letter[key]
-        # print(result,'=')
-    elif key not in letter.keys():
-        for i in range(len(key)):
-            cnt = 0
-            for j in range(len(key)):
-                # print(key)
-                if key[j] == p[i][j]:
-                    cnt += 1
-                    # print(key[j],'-',p[i][j])
-                if cnt == 5:
-                    result += letter[p[i]]
-
-
+#                 if cnt == 5:
+#                     result += letter[p[i]]
+#                 #
+#                 elif cnt <= 4:
+#                     result = str(ct)
 
 
 
@@ -97,7 +107,7 @@ for key in temp:
 #     if key == p[0]:
 #         print(key)
 
-print(result)
+print(''.join(result))
 
 # 종료 시간 체크
 etime = time.time()
