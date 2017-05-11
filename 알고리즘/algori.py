@@ -36,71 +36,35 @@ letter_num = input()            # 비밀편지 숫자
 # 시작 시간 체크
 stime = time.time()
 
-
 temp =[]        # 6개씩 자른 비밀편지 숫자를 담을 리스트 변수
 start = 0       # 비밀편지 숫자를 6개씩 자르기 위한 변수1
 finish = 6      # 비밀편지 숫자를 6개씩 자르기 위한 변수2
-cnt = 0         # 위치 출력을 위한 변수
-result = []     # 6개씩 자른 숫자를 문자로 담을 리스트 변수
-# result = ''
+cnt = 0         # 숫자 비교를 위한 카운팅 변수
+count = 0       # 위치 확인을 위한 카운팅 변수
+result = []     # 6개씩 자른 숫자를 문자로 바꿔서 담을 리스트 변수
+ct = []         # 틀린 위치 리스트 변수
 
 while finish <= letter_cnt:
     temp.append(letter_num[start:finish])
     start += 6
     finish += 6
 
-count = 0
-
 for key in temp:
     for i in range(8):
         cnt = 0
-            # count = 0
-
         for j in range(6):
-                # print(key)
-
             if key[j] == letter_key[i][j]:
                 cnt += 1
-                    # print(count)
-                    # print(key[j],'-',p[i][j])
-                    # print(cnt)
                 if cnt == 5:
                     count += 1
                     result.append(letter[letter_key[i]])
-                        # print(cnt)
-
-
-
-
-# for key in temp:
-#     if key in letter.keys():
-#         result += letter[key]
-#         # print(result,'=')
-#     elif key not in letter.keys():
-#         for i in range(len(key)):
-#             cnt = 0
-#             ct = 0
-#             for j in range(len(key)):
-#                 # print(key)
-#                 if key[j] == p[i][j]:
-#                     cnt += 1
-#                     ct += 1
-#                     # print(key[j],'-',p[i][j])
-#                 if cnt == 5:
-#                     result += letter[p[i]]
-#                 #
-#                 elif cnt <= 4:
-#                     result = str(ct)
-
-
-
-# for key in letter:
-#     if key == p[0]:
-#         print(key)
+                if len(temp) == count:
+                    ct.append(0)
+                elif cnt != 5:
+                    ct.append(count)
 
 print(''.join(result))
-print(count)
-
+print(ct[-1])
 
 # 종료 시간 체크
 etime = time.time()
@@ -111,11 +75,3 @@ proc = psutil.Process(os.getpid())
 mem = proc.memory_info()
 after_start = mem[0]
 print('memory use : ', after_start-before_start)
-
-
-# print(p)
-# print(d[0])
-# print(temp[0])
-# print(''.join(result))
-# print(''.join(paper))
-# print(''.join(d)[0])
