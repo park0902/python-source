@@ -3,18 +3,16 @@ import psutil
 import time
 
 ###################################################################################################
-## 1. 문제        : 오류고정 (고급)
-## 2. 소요 시간   : 0.0 초 (소수점 6자리 반올림)
-## 3. 사용 메모리 : 163840 byte
-## 4. 만든 사람   : 길용현
+## 1. 문제        : 비밀편지
+## 2. 소요 시간    : 0.0 초 (소수점 6자리 반올림)
+## 3. 사용 메모리  : 28672 byte
+## 4. 만든 사람    : 박상범
 ###################################################################################################
 
 # 시작 메모리 체크
 proc1 = psutil.Process(os.getpid())
 mem1 = proc1.memory_info()
 before_start = mem1[0]
-
-
 
 # 001111000000011100
 letter = {
@@ -28,51 +26,48 @@ letter = {
           '111010':'H'
          }
 
-p = list(letter.keys())
+# 비밀편지 딕셔너리 키 값 리스트화
+letter_key = list(letter.keys())
 
 
-
-letter_cnt = int(input())*6
-letter_num = input()
+letter_cnt = int(input())*6     # 문자의 개수
+letter_num = input()            # 비밀편지 숫자
 
 # 시작 시간 체크
 stime = time.time()
 
 
-
-temp =[]
-# temp = ['001111', '000000', '011100']
-start = 0
-finish = 6
-cnt = 0
+temp =[]        # 6개씩 자른 비밀편지 숫자를 담을 리스트 변수
+start = 0       # 비밀편지 숫자를 6개씩 자르기 위한 변수1
+finish = 6      # 비밀편지 숫자를 6개씩 자르기 위한 변수2
+cnt = 0         # 위치 출력을 위한 변수
+result = []     # 6개씩 자른 숫자를 문자로 담을 리스트 변수
 # result = ''
-result = []
+
 while finish <= letter_cnt:
     temp.append(letter_num[start:finish])
     start += 6
     finish += 6
 
-# print(p)
 count = 0
+
 for key in temp:
-           for i in range(8):
-            cnt = 0
+    for i in range(8):
+        cnt = 0
             # count = 0
 
-            for j in range(6):
+        for j in range(6):
                 # print(key)
 
-                if key[j] == p[i][j]:
-                    cnt += 1
+            if key[j] == letter_key[i][j]:
+                cnt += 1
                     # print(count)
                     # print(key[j],'-',p[i][j])
                     # print(cnt)
-                    if cnt == 5:
-                        count += 1
-                        result.append(letter[p[i]])
+                if cnt == 5:
+                    count += 1
+                    result.append(letter[letter_key[i]])
                         # print(cnt)
-
-                    # elif cnt < 5:
 
 
 
@@ -105,7 +100,7 @@ for key in temp:
 
 print(''.join(result))
 print(count)
-print()
+
 
 # 종료 시간 체크
 etime = time.time()
