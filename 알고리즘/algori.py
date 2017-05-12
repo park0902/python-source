@@ -33,6 +33,7 @@ letter_key = list(letter.keys())
 letter_cnt = int(input())*6     # 문자의 개수
 letter_num = input()            # 비밀편지 숫자
 
+
 # 시작 시간 체크
 stime = time.time()
 
@@ -60,7 +61,7 @@ for key in temp:
                     result.append(letter[letter_key[i]])
                 if len(temp) == count:
                     ct.append(0)
-                elif cnt != 5:
+                elif cnt <= 4:
                     ct.append(count)
 
 print(''.join(result))
