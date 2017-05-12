@@ -49,29 +49,28 @@ stime = time.time()
 a = fi_a(last)[-1]  # a의 계수
 b = fi_b(last)[-1]  # b의 계수
 
-p = []
-q = []              
-s = ''              # 첫째날 준 떡의 개수를 위한 변수
-t = ''              # 둘째날 준 떡의 개수를 위한 변수
+p = []              # af(1)의 모든 수를 담을 변수
+q = []              # bf(2)의 모든 수를 담을 변수
+res_f1 = ''         # 첫째날 준 떡의 개수를 위한 변수
+res_f2 = ''         # 둘째날 준 떡의 개수를 위한 변수
 
 for i in range(1,value):
     if a*i <= value:
         p.append(a*i)
-
+# print(p)
 for i in range(1,value):
     if b*i <= value:
         q.append(b*i)
+# print(q)
+for f1 in range(len(p)):
+    for f2 in range(len(q)):
+        if p[f1]+q[f2] == value and f1 < f2:
+            # print(p[f1] + q[f2], f1 + 1, f2 + 1)
+            res_f1 = f1+1
+            res_f2 = f2+1
 
-for i in p:
-    for j in range(len(p)):
-        for k in range(len(q)):
-            # print(p[j]+q[k], j+1, k+1)
-            if p[j]+q[k] == value and j < k:
-                s = j+1
-                t = k+1
-
-print('첫째날 준 떡의 개수 : ', s, '개')
-print('둘째날 준 떡의 개수 : ', t, '개')
+print('첫째날 준 떡의 개수 : ', res_f1, '개')
+print('둘째날 준 떡의 개수 : ', res_f2, '개')
 
 # 종료 시간 체크
 etime = time.time()
