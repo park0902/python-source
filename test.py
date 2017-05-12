@@ -48,56 +48,23 @@
 # print(temp)
 
 
-def fi_b(num):
-    res = [1,2]
-
-    for i in range(2, num-2):
-        res.append(res[i-1]+res[i-2])
-
-    return res
-
-def fi_a(num):
-    res = [1,1]
-
-    for i in range(2, num-2):
-        res.append(res[i-1]+res[i-2])
-
-    return res
 #
-last = int(input())
-value = int(input())
 
-a = fi_a(last)[-1]
-b = fi_b(last)[-1]
-c = fi_a(last)
-d = fi_b(last)
 
-# print(c)
-# print(d)
 
-p = []
-q = []
-s = ''
-t = ''
+def word_cnt():
+    word_script = ''     # 입력받은 단어를 담을 변수
+    while word_script != 'end':        # end를 입력하지 않으면 계속 진행
+        word_list=[]                   # 입력된 단어 중 중복을 제거하고 남은 단어를 담을 변수
+        word_script = str(input('단어를 입력하세요!'))
+        if word_script != 'end':        # end가 입력되면 진행하지말고 종료
+            if len(word_script) < 200:  # 단어 길이가 200 이하로 입력이 되면 실행
+                word = word_script.split()      # 입력받은 word_script를 split함수로 구분
+                word_list = list(set(word))     # list(set())함수로 담겨진 단어들 중 중복 제거
+                word_list.sort()               # sort()함수로 정렬
+                for i in word_list:
+                    word_cnt = 0
+                    word_cnt += word.count(i) # 중복 제거한 word_list에서 word에 몇개가 들어가있는지 count
+                    print(i,':',word_cnt)
 
-for i in range(1,value):
-    if a*i <= value:
-        p.append(a*i)
-
-for i in range(1,value):
-    if b*i <= value:
-        q.append(b*i)
-
-# print(p)
-# print(q)
-# print('='*10)
-for i in p:
-    for j in range(len(p)):
-        for k in range(len(q)):
-            # print(p[j]+q[k], j+1, k+1)
-            if p[j]+q[k] == value and j < k:
-                s = j+1
-                t = k+1
-
-print(s)
-print(t)
+print(word_cnt())
