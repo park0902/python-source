@@ -12,6 +12,7 @@ class Snake:
         self.segments = segments
         self.mapping = {'Down':(0,1), 'Right':(1,0), 'Up':(0,-1), 'Left':(-1,0)}
         self.vector = self.mapping['Down']  # 시작 방향
+        # self.canvas.bind_all('<Key>', self.stop)
 
     def move(self):
         for index in range(len(self.segments)-1):
@@ -35,10 +36,30 @@ class Snake:
             self.vector = self.mapping[event.keysym]
             # print(self.vector)
 
+    # def stop(self, evt):
+    #
 
-class Segment(object):
+class Segment:
     def __init__(self,x,y):
         self.instance = canvas.create_rectangle(x, y, x+SEG_SIZE, y+SEG_SIZE, fill='white')
+
+
+# class Block1:
+#     def __init__(self,x,y):
+#         self.instance = canvas.create_rectangle(40, 20, x+SEG_SIZE, y+SEG_SIZE, fill='white')
+#
+# class Block2:
+#     def __init__(self,x,y):
+#         self.instance = canvas.create_rectangle(40, 20, x+SEG_SIZE, y+SEG_SIZE, fill='white')
+
+def create_block():
+    global BLOCK1, BLOCK2
+    # posx1 = SEG_SIZE * random.randint(1, (WIDTH-SEG_SIZE) / SEG_SIZE)
+    # posy1 = SEG_SIZE * random.randint(1, (HEIGHT-SEG_SIZE) / SEG_SIZE)
+    # posx2 = SEG_SIZE * random.randint(1, (WIDTH-SEG_SIZE) / SEG_SIZE)
+    # posy2 = SEG_SIZE * random.randint(1, (HEIGHT-SEG_SIZE) / SEG_SIZE)
+    BLOCK1 = canvas.create_rectangle(20, 40, 140, 60, fill='white')
+    BLOCK2 = canvas.create_rectangle(300, 80, 320, 200, fill='white')
 
 
 def create_ball():
@@ -58,13 +79,16 @@ def main():
         head_coords = canvas.coords(snake.segments[-1].instance)
         x1, y1, x2, y2 = head_coords
         # print([x1,y1,x2,y2])
-        if x2 > WIDTH or x1 < 0 or y2 > HEIGHT or y1 < 0:
+        if x2 > WIDTH or x1 < 0 or y2 > HEIGHT or y1 < 0 or head_coords == canvas.coords(BLOCK1) or head_coords == canvas.coords(BLOCK2):
             IN_GAME = False
         elif head_coords == canvas.coords(BALL1) or head_coords == canvas.coords(BALL2):
             snake.add_segment()
             canvas.delete(BALL1)
             canvas.delete(BALL2)
+            canvas.delete(BLOCK1)
+            canvas.delete(BLOCK2)
             create_ball()
+            create_block()
 
         else:
             for index in range(len(snake.segments)-1):
@@ -97,6 +121,9 @@ if __name__ == '__main__':
     snake = Snake(segments)
     canvas.bind('<KeyPress>', snake.change_direction)
     create_ball()
+    create_block()
+    # Block1(40,200)
+    # Block2(200,20)
     main()
     tk.mainloop()
 
