@@ -236,6 +236,7 @@ class Paddle:
         self.canvas.move(self.id, 200, y_loc)  # 패들 사각형을 200,300 에 위치
         self.x = 0  # 패들이 처음 시작할때 움직이지 않게 0으로 설정
         self.canvas_width = self.canvas.winfo_width()  # 캔버스의 넓이를 반환한다. 캔버스 밖으로 패들이 나가지 않도록
+        print(self.canvas_width)
         self.canvas.bind_all('<KeyPress-Left>', self.turn_left)  # 왼쪽 화살표 키를 '<KeyPress-Left>'  라는 이름로 바인딩
         self.canvas.bind_all('<KeyPress-Right>', self.turn_right)  # 오른쪽도 마찬가지로 바인딩한다.
 
