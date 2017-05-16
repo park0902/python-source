@@ -6,7 +6,6 @@ import csv
 
 EMPTY = 0
 PADDLE_HEIGHT = 360.0
-PADDLE_HEIGHT1 = 160.0
 PADDLE_MOVE = [-10, 10]
 
 START = 3
@@ -232,7 +231,9 @@ class Ball:
 class Paddle:
     def __init__(self, canvas, y_loc, color):
         self.canvas = canvas
-        self.id = canvas.create_polygon(0, 0, 15, 0, 15, 15, 30, 15, 30, 0, 45, 0, 45, 100, 0, 100, fill=color)  # 패들의 높이와 넓이 그리고 색깔
+        self.id1 = canvas.create_rectangle(0, 0, 15, 100, fill=color)  # 패들의 높이와 넓이 그리고 색깔
+        self.id = canvas.create_rectangle(0, 0, 15, 100, fill=color)  # 패들의 높이와 넓이 그리고 색깔
+        self.canvas.move(self.id, 200, y_loc)  # 패들 사각형을 200,300 에 위치
         self.canvas.move(self.id, 200, y_loc)  # 패들 사각형을 200,300 에 위치
         self.x = 0  # 패들이 처음 시작할때 움직이지 않게 0으로 설정
         self.canvas_width = self.canvas.winfo_width()  # 캔버스의 넓이를 반환한다. 캔버스 밖으로 패들이 나가지 않도록
@@ -282,7 +283,7 @@ if __name__ == '__main__':
     canvas.pack()  # 앞의 코드에서 전달된 폭과 높이는 매개변수에 따라 크기를 맞추라고 캔버스에에 말해준다.
     tk.update()  # tkinter 에게 게임에서의 애니메이션을 위해 자신을 초기화하라고 알려주는것이다.
     paddle = Paddle(canvas, PADDLE_HEIGHT, 'blue')
-    # paddle = Paddle(canvas, PADDLE_HEIGHT1, 'blue')
+    # paddle1 = Paddle(canvas,PADDLE_HEIGHT, 'blue')
 
     # announceterm : 현재 count 출력 term, saveterm : csv에 저장하는 term
     ball = Ball(canvas, paddle, 'red', announceterm=500, saveterm=100)
