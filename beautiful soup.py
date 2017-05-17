@@ -221,31 +221,35 @@
 
 
 
-import urllib.request
-from bs4 import BeautifulSoup
-import re
-import os
+# import urllib.request
+# from bs4 import BeautifulSoup
+# import re
+# import os
+#
+#
+# def fetch_list_url(s):
+#     list_url = "http://home.ebs.co.kr/ladybug/board/6/10059819/oneBoardList?c.page="+str(s)+'&hmpMnuId=106&searchKeywordValue=0&bbsId=10059819&searchKeyword=&searchCondition=&searchConditionValue=0&'
+#     # print(list_url)
+#     url = urllib.request.Request(list_url)
+#     res = urllib.request.urlopen(url).read().decode("utf-8")
+#     # print(res)  # 위의 두가지 작업을 거치면 위의 url의 html 문서를 res 변수에 담을 수 있게 된다
+#     soup = BeautifulSoup(res, "html.parser")    # res 에 담긴 html 코드를 BeautifulSoup 모듈로 검색하기 위한 작업
+#     # 위의 ebs 게시판 url 로 접속했을때 담긴 html 코드를
+#     # soup 에 담겠다
+#     # e_reg = re.compile("(레이디버그)")  # 완젼 이라는 텍스트를 검색하기 위해서 완젼이라는 한글을 컴파일
+#
+#     result = soup.find_all('p', class_='con')
+#     result1 = soup.find_all('span', class_='date')
+#     cnt = 0
+#
+#     for i in result:
+#         print(result1[cnt].get_text(strip=True), i.get_text(strip=True))
+#         cnt += 1
+#         # print(i.get_text(strip=True))
+#
+# for i in range(1,16):
+#     fetch_list_url(i)
 
 
-def fetch_list_url(s):
-    list_url = "http://home.ebs.co.kr/ladybug/board/6/10059819/oneBoardList?c.page="+str(s)+'&hmpMnuId=106&searchKeywordValue=0&bbsId=10059819&searchKeyword=&searchCondition=&searchConditionValue=0&'
-    # print(list_url)
-    url = urllib.request.Request(list_url)
-    res = urllib.request.urlopen(url).read().decode("utf-8")
-    # print(res)  # 위의 두가지 작업을 거치면 위의 url의 html 문서를 res 변수에 담을 수 있게 된다
-    soup = BeautifulSoup(res, "html.parser")    # res 에 담긴 html 코드를 BeautifulSoup 모듈로 검색하기 위한 작업
-    # 위의 ebs 게시판 url 로 접속했을때 담긴 html 코드를
-    # soup 에 담겠다
-    # e_reg = re.compile("(레이디버그)")  # 완젼 이라는 텍스트를 검색하기 위해서 완젼이라는 한글을 컴파일
 
-    result = soup.find_all('p', class_='con')
-    result1 = soup.find_all('span', class_='date')
-    cnt = 0
 
-    for i in result:
-        print(result1[cnt].get_text(strip=True), i.get_text(strip=True))
-        cnt += 1
-        # print(i.get_text(strip=True))
-
-for i in range(1,16):
-    fetch_list_url(i)
