@@ -1,17 +1,18 @@
-# import pandas as pd
-# # import numpy as np
-# # import matplotlib.pyplot as plt
-#
-# rawdate = pd.read_csv('d:\data7\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
+import pandas as pd
+# import numpy as np
+# import matplotlib.pyplot as plt
+
+rawdate = pd.read_csv('d:\data7\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
+print(rawdate)
 # print(rawdate.head(366))
 # print(rawdate.plot())
 
 
-for i in range(1,10):
-    if i == 1:
-        i = '01'
-    print(i)
-
+# for i in range(1,10):
+#     if i == 1:
+#         i = '0'+str(i)
+#     print(i)
+#
 
 
 

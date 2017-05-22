@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup  # html 문서검색 모듈
 import os
 
 def get_save_path():
-    save_path = input("Enter the file name and file location : ")
+    save_path = input("Enter the file name and file location1 : ")
     save_path = save_path.replace("\\", "/")
 
     if not os.path.isdir(os.path.split(save_path)[0]):
@@ -16,8 +16,8 @@ p = 0
 q = 0
 def fetch_list_url():
     f = open(get_save_path(), 'w', encoding='utf-8')
-    for i in range(1,2):
-        for j in range(1,2):
+    for i in range(1,13):
+        for j in range(1,32):
             list_url = "https://www.wunderground.com/history/airport/RKSI/2016/"+str(i)+"/"+str(j)+"/DailyHistory.html"
             url = urllib.request.Request(list_url) # url 요청에 따른 http 통신 헤더값을 얻어낸다
             res = urllib.request.urlopen(url).read().decode("utf-8")
@@ -34,7 +34,7 @@ def fetch_list_url():
             #     print(x,index)
             #     x += 1
 
-            date = '2016'+str(i)+str(j)
+            date = str(i)
             soup_mean_temp = soup_temp[0].get_text()
             soup_max_temp = soup_temp[1].get_text()
             soup_min_temp = soup_temp[4].get_text()
