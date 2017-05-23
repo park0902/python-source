@@ -124,7 +124,7 @@ elem.send_keys("삼성전자")  # 삼성전자로 검색창에 입력
 elem.submit()              # 엔터
 
 
-for i in range(1,3):    # 스크롤 다운 3번 수행
+for i in range(1,15):    # 스크롤 다운 3번 수행
     browser.find_element_by_xpath("//body").send_keys(Keys.END)
     time.sleep(5)
 
