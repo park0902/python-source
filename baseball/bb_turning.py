@@ -338,7 +338,7 @@ class Game:
         print('== 선수단 구성')
         print('====================================================================================================')
         print('== 선수단 구성이 완료 되었습니다.\n')
-        self.random_numbers = self.throws_numbers()
+        self.throws_numbers()
 
     def throws_numbers(self):
         random_balls = set()
