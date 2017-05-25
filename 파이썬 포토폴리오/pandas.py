@@ -50,6 +50,7 @@ show()
 
 
 
+
 # import urllib.request           # 웹 브라우져에서 html 문서를 얻어오기위해 통신하기 위한 모듈
 # from bs4 import BeautifulSoup  # html 문서검색 모듈
 #
