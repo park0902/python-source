@@ -1,9 +1,9 @@
-import pandas as pd
+# import pandas as pd
 # import numpy as np
 # import matplotlib.pyplot as plt
 
-rawdate = pd.read_csv('d:\data7\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
-print(rawdate)
+# rawdate = pd.read_csv('d:\data7\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
+# print(rawdate)
 # print(rawdate.head(366))
 # print(rawdate.plot())
 
@@ -13,6 +13,40 @@ print(rawdate)
 #         i = '0'+str(i)
 #     print(i)
 #
+
+
+
+from pylab import legend
+from pylab import plot, show
+from pylab import title, xlabel, ylabel
+from pylab import axis
+axis()
+
+
+# title('average monthly humidity in Seoul, 2014')
+# xlabel('Month')
+# ylabel('Humidity')
+# show()
+
+month =range(1, 13)
+
+seoul = [50.0, 52.0, 60.0, 60.0, 59.0, 73.0, 74.0, 77.0, 69.0, 63.0, 61.0, 56.0]
+daejeon = [65.0, 63.0, 64.0, 61.0, 62.0, 77.0, 83.0, 87.0, 78.0, 76.0, 77.0, 75.0]
+busan = [41.0, 62.0, 60.0, 59.0, 68.0, 80.0, 85.0, 86.0, 75.0, 68.0, 61.0, 50.0 ]
+plot(month, seoul, month, daejeon, month, busan, marker="o")
+axis(xmin=1, ymin=0)
+title('average monthly humidity in Seoul, Daejeon, Busan (2014)')
+xlabel('Month')
+ylabel('Humidity')
+legend(['Seoul', 'Daejeon', 'Busan'], loc='best')
+show()
+
+
+
+
+
+
+
 
 
 
