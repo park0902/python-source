@@ -1,18 +1,171 @@
-# import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-# rawdate = pd.read_csv('d:\data7\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
-# print(rawdate)
-# print(rawdate.head(366))
-# print(rawdate.plot())
+rawdate = pd.read_csv('e:\data\\final_incheon_airport.csv', names=['Mean', 'Max', 'Min', 'dew','wind', 'maxwind', 'vis'])
+print(rawdate)
+print(rawdate.head(366))
+print(rawdate.plot())
 
 
-# for i in range(1,10):
-#     if i == 1:
-#         i = '0'+str(i)
-#     print(i)
-#
+
+
+'''
+- 2016년 평균기온 그래프
+'''
+import matplotlib.pyplot as plt
+import pandas as pd
+
+fig = plt.figure(); ax = fig.add_subplot(1,1,1)
+
+df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+mean = list(df['mean'])
+month =range(1, 367)
+
+plt.plot(month, mean, label='Avg Temperauture', c="y")
+
+ticks = ax.set_xticks([0,31,60,91,121,151,181,212,243,273,304,334.366])
+labels = ax.set_xticklabels(['January','February','March','April','May','Jun','July','August','September',
+                             'October','November','December'], rotation=30)
+
+ax.set_title('RKSI 2016 year Mean Temperature')
+plt.xlabel('Months')
+plt.ylabel('Temperauture')
+ax.legend(loc='best')
+
+plt.show()
+
+
+
+
+
+
+
+
+'''
+- 2개 그래프 그리기
+'''
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+month = range(1, 32)
+month1 = range(1, 33)
+
+re = list(df['max'][df['month']==1])
+re1 = list(df['max'][df['month']==8])
+
+plt.xlim(1, 32)
+plt.ylim(-20, 40)
+
+ax1 = plt.subplot(2,1,1)
+plt.plot(month, re, 'yo-')
+plt.title('average monthly humidity in Seoul, Daejeon, Busan (2014)')
+plt.ylabel('Humidity')
+
+ax2 = plt.subplot(2,1,2)
+plt.plot(month, re1, 'r.-')
+plt.xlabel('Month')
+plt.ylabel('Humidity')
+
+plt.show()
+
+
+
+'''
+- 월별 평균 기온 그래프 그리기
+'''
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+
+month1 = range(1, 30)
+month2 = range(1, 31)
+month3 = range(1, 32)
+
+re1 = list(df['mean'][df['month']==1])
+re2 = list(df['mean'][df['month']==2])
+re3 = list(df['mean'][df['month']==3])
+re4 = list(df['mean'][df['month']==4])
+re5 = list(df['mean'][df['month']==5])
+re6 = list(df['mean'][df['month']==6])
+re7 = list(df['mean'][df['month']==7])
+re8 = list(df['mean'][df['month']==8])
+re9 = list(df['mean'][df['month']==9])
+re10 = list(df['mean'][df['month']==10])
+re11 = list(df['mean'][df['month']==11])
+re12 = list(df['mean'][df['month']==12])
+
+
+plt.xlim(1, 32)
+plt.ylim(-20, 40)
+
+
+plt.subplot(341); plt.plot(month3, re1); plt.title('January Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(342); plt.plot(month1, re2); plt.title('February Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(343); plt.plot(month3, re3); plt.title('March Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(344); plt.plot(month2, re4); plt.title('April Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(345); plt.plot(month3, re5); plt.title('May Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(346); plt.plot(month2, re6); plt.title('Jun Avg temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(347); plt.plot(month3, re7); plt.title('July Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(348); plt.plot(month3, re8); plt.title('August Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(349); plt.plot(month2, re9); plt.title('September Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(3,4,10); plt.plot(month3, re10); plt.title('October Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(3,4,11); plt.plot(month2, re11); plt.title('November Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.subplot(3,4,12); plt.plot(month3, re12); plt.title('December Avg Temp'); plt.xlabel('Days'); plt.ylabel('Temperature')
+plt.tight_layout()
+plt.show()
+
+
+
+'''
+- 여름 평균 기온 그래프
+'''
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+
+month1 = range(1, 30)
+month2 = range(1, 31)
+month3 = range(1, 32)
+
+re6 = list(df['mean'][df['month']==6])
+re7 = list(df['mean'][df['month']==7])
+re8 = list(df['mean'][df['month']==8])
+
+plt.plot(month2, re6, label='Jun', c="b", lw=1, ls=":", marker="D")
+plt.hold(True)
+plt.plot(month3, re7, label='July', c="g", lw=1, ls=":", marker="s")
+plt.hold(True)
+plt.plot(month3, re8, label='August', c="y", lw=1, ls=":", marker="o")
+plt.hold(True)
+
+plt.title('Summer Avg Temperature')
+plt.xlabel('Days')
+plt.ylabel('Temperature')
+
+plt.legend(loc=3)
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
