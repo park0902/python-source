@@ -18,7 +18,7 @@ import pandas as pd
 
 fig = plt.figure(); ax = fig.add_subplot(1,1,1)
 
-df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 mean = list(df['mean'])
 month =range(1, 367)
 
@@ -40,6 +40,33 @@ plt.show()
 
 
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
+fig = plt.figure(); ax = fig.add_subplot(1,1,1)
+
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
+mean = list(df['mean'])
+month =range(1, 367)
+
+plt.plot(month, mean, 'k-',drawstyle='steps-post', label='Avg Temperauture', c="y")
+
+ax.set_xticks([0,31,60,91,121,151,181,212,243,273,304,334.366])
+ax.set_xticklabels(['January','February','March','April','May','Jun','July','August','September',
+                             'October','November','December'], rotation=30)
+
+ax.set_title('RKSI 2016 year Mean Temperature')
+
+# ax.set_xlim()
+plt.xlabel('Months')
+plt.ylabel('Temperauture')
+ax.legend(loc='best')
+
+plt.show()
+
+
+
+
 
 
 '''
@@ -48,7 +75,7 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 month = range(1, 32)
 month1 = range(1, 33)
 
@@ -78,7 +105,7 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 
 month1 = range(1, 30)
 month2 = range(1, 31)
@@ -125,7 +152,7 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 
 month1 = range(1, 30)
 month2 = range(1, 31)
@@ -152,8 +179,22 @@ plt.show()
 
 
 
+'''
+- 1월 가시도 막대그래프
+'''
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 
 
+vis = list(df['vis'][df['month']==1])
+vis1 = list(df['vis'][df['month']==5])
+month = range(1, 32)
+
+df = pd.DataFrame(vis, index=month, columns=pd.Index(['Visibility']))
+
+df.plot(kind='bar', stacked=True, alpha=0.5)
 
 
 
@@ -265,5 +306,32 @@ show()
 
 
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
+month = range(1, 32)
+month1 = range(1, 33)
+
+re = list(df['max'][df['month']==1])
+re1 = list(df['max'][df['month']==8])
+
+plt.xlim(1, 32)
+plt.ylim(-20, 40)
+
+plt.subplot(1,1,1)
+plt.plot(month, re, 'yo-')
+plt.title('average monthly humidity in Seoul, Daejeon, Busan (2014)')
+plt.ylabel('Humidity')
+
+# ax2 = plt.subplot(2,1,2)
+# plt.plot(month, re1, 'r.-')
+# plt.xlabel('Month')
+# plt.ylabel('Humidity')
+
+# df = pd.DataFrame(vis, index=month, columns=pd.Index(['Visibility']))
+#
+# df.plot(kind='bar', stacked=True, alpha=0.5)
 
 
+plt.show()
