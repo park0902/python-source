@@ -1,313 +1,294 @@
 from tkinter import *
-
-import random
+import math
 import time
-import csv
+import random
 
-EMPTY = 0
-PADDLE_HEIGHT = 360.0
-PADDLE_HEIGHT1 = 160.0
-PADDLE_MOVE = [-10, 10]
-
-START = 3
-END = 4
-
-
-class Ball:
-    def __init__(self,canvas,paddle,color,announceterm,saveterm,winval=10, loseval=-1):
+class Map() :
+    def __init__(self, canvas):
         self.canvas = canvas
-        self.paddle = paddle
-        self.id = canvas.create_oval(10, 10, 25, 25, fill=color)  # 공 크기 및 색깔
+        self.canvas.create_polygon(0,   100,    0,      150, 700, 200, 700, 150)
+        self.canvas.create_polygon(100, 300,    100,    350, 800, 300, 800, 250)
+        self.canvas.create_polygon(0,   400,    0,      450, 700, 500, 700, 450)
+        self.canvas.create_polygon(100, 600,    100,    650, 800, 600, 800, 550)
 
-        self.canvas.move(self.id, 245, 200)  # 공을 캔버스 중앙으로 이동
-        starts = [-3, 3]  # 공의 속도를 랜덤으로 구성하기 위해 준비한 리스트
-        random.shuffle(starts)  # starts 리스트 중에 숫자를 랜덤으로 골라서
-        self.x = starts[0]  # 처음 공이 패들에서 움직일때 왼쪽으로 올라갈지 오른쪽으로 올라갈지 랜덤으로 결정되는 부분
-        self.y = -3  # 처음 공이 패들에서 움직일때 위로 올라가는 속도
-        self.canvas_height = self.canvas.winfo_height()  # 캔버스의 현재 높이를 반환한다.(공이 화면에서 사라지지 않기위해)
-        self.canvas_width = self.canvas.winfo_width()  # 캔버스의 현재 넓이를 반환한다.(공이 화면에서 사라지지 않기위해)
-        self.hit_bottom = False
-        self.values = {}
-        self.epsilon = 0.1  # 랜덤율
-        self.alpha = 0.99  # 망각계수
-        self.learning = True
-        self.cycle_data = []
-        self.wincount = 0
-        self.losecount = 0
-        self.gamecount = 0
-        self.winval = winval  # 성공 보상치
-        self.loseval=loseval
-        self.announceterm = announceterm  # 게임 횟수 프린트 텀
-        self.saveterm = saveterm  # csv 저장 텀
+class Ball() :
+    def __init__(self, canvas):
+        self.canvas = canvas
+        self.w_width = self.canvas.winfo_width()
+        self.w_height = self.canvas.winfo_height()
+        #self.id = self.canvas.create_oval(1,1,31,31)
+        #self.x = 0
+        #self.y = 3
+        self.ball_list = []
+        self.counter = 0
+        self.random = None
 
-        # csv 파일에서 gamecount / values 불러옴
-        self.loadcsv()
+    def reset(self):
+        for i in self.ball_list :
+            self.canvas.delete(i[0])
+        self.ball_list = []
+        self.counter = 0
+        self.random = None
 
-
-    def action(self):
-        r = random.random()
-        if r < self.epsilon:
-            direction = self.randomChoice()
-        else:
-            direction = self.greedyChoice()
-        x = PADDLE_MOVE[direction]
-        # 머신러닝을 위한 한 사이클 내 이동 데이터 저장
-        self.cycle_data.append(self.keystate(direction))
-        # 이동/그리기
-        self.paddle.move(x)
-        self.paddle.draw()
-
-
-    # 이동 방향 랜덤으로 지정
-    def randomChoice(self):
-        rand = random.choice([0, 1])
-        key = self.keystate(rand)
-        if key not in self.values:
-            self.add(key)
-        return rand
-
-
-    # 이동 방향 Greedy로 지정
-    def greedyChoice(self):
-        val_left = self.keystate(0)
-        val_right = self.keystate(1)
-
-        if self.lookup(val_left) > self.lookup(val_right):
-            return 0
-        elif self.lookup(val_left) < self.lookup(val_right):
-            return 1
-        else:
-            return random.choice([0, 1])
-
-
-    def add(self, key):
-        self.values[key] = 0
-
-
-    def lookup(self, key):
-        if key not in self.values:
-            # print(key)
-            self.add(key)
-        return self.values[key]
-
-
-    def hit_paddle(self, pos):  # 패들에 공이 튀기게 하는 함수
-        paddle_pos = self.canvas.coords(self.paddle.id)
-        # 공의 x좌표가 패들의 너비 안에 있는지 / 공 바닥이 패들 윗면에 닿아 있는지
-        if pos[2] >= paddle_pos[0] and pos[0] <= paddle_pos[2] \
-                and pos[3] == PADDLE_HEIGHT:
-            return True
-        return False
-
-
-    # 공을 패들로 받았는지 여부 출력(True/False)
-    def is_paddle_hit(self):
-        return self.hit_paddle(self.canvas.coords(self.id))
-
+    def get_center(self, pos):
+        return (round((pos[0]+pos[2])/2), pos[3])
 
     def draw(self):
-        # 볼의 현재 좌표를 출력해준다. 공 좌표( 좌상단 x,y좌표 / 우하단 x,y좌표 )
+        self.random = self.random or random.randrange(80, 200)
+        # print(self.random)
+
+        if (len(self.ball_list) < 5) and (self.counter % self.random == 0):
+            self.ball_list.append([self.canvas.create_oval(1,1,25,25), 0, 3])
+            self.counter = 0
+            self.random = None
+        self.counter += 1
+
+        for j in range(len(self.ball_list)-1, -1, -1) :
+            # 경사로 이동
+            i = self.ball_list[j]
+            id = i[0]
+
+            pos = self.canvas.coords(i[0])
+            base = self.get_center(pos)
+            x, y = i[1], i[2]
+            y=3
+            if 550<=base[1]<=600 and base[0] >= 100 :
+                if x == 0 : x = -3
+                else : x -= 0.05
+                y = math.ceil(-1*(base[0]-100)/14+600) - base[1]
+            elif 250 <= base[1] <=300 and base[0] >= 100 :
+                if x == 0 : x = -3
+                else : x -= 0.05
+                y = math.ceil(-1*(base[0]-100)/14+300) - base[1]
+            elif 400<=base[1]<=450 and base[0] <= 700 :
+                if x == 0 : x = 3
+                else : x += 0.05
+                y = math.ceil((base[0]/14)+400) - base[1]
+            elif 100 <= base[1] <= 150 and base[0] <= 700:
+                if x == 0 : x = 3
+                else : x += 0.05
+                y = math.ceil(base[0]/14+100) - base[1]
+            else : y +=5
+
+            if pos[0]+x <= 0 or pos[2]+x >= self.w_width :
+                if x > 0:
+                    self.canvas.move(id, self.w_width-pos[2]-2, y)
+                elif x < 0:
+                    self.canvas.move(id, -pos[0]+1, y)
+                x = 0
+
+            self.canvas.move(id, x, y)
+            i[1], i[2] = x, y
+
+            if pos[1] > self.w_height :
+                self.canvas.delete(i[0])
+                del self.ball_list[j]
+
+class Man():
+
+    dict = {}
+
+    def __init__(self, canvas, ball):
+        self.canvas = canvas
+        self.w_width = self.canvas.winfo_width()
+        self.w_height = self.canvas.winfo_height()
+        self.id = self.canvas.create_rectangle(5, 550, 35, 599)
+        self.goal = self.canvas.create_rectangle(450,75, 475, 100)
+        self.x = 0
+        self.y = 5
+        self.ball = ball
+        self.canvas.bind_all('<KeyPress-j>', self.switch)
+        # self.canvas.bind_all('<KeyPress-l>', self.turn_right)
+        # self.canvas.bind_all('<KeyPress-u>', self.jump_left)
+        # self.canvas.bind_all('<KeyPress-o>', self.jump_right)
+        self.val = False
+        self.pre_pos = None
+        self.jump = False
+        self.move_list = [self.turn_left, self.turn_right, self.jump_left, self.jump_right]
+        self.cycle_list = []
+
+    def switch(self, evt):
+        self.val = not self.val
+
+
+    def play(self):
+        print(Man.dict)
+        if not self.jump :
+            i = random.random()
+            state = self.make_state()
+            if i < 0.1 :
+                move = self.move_random()
+                state.append(move)
+                state = tuple(state)
+                if state not in Man.dict.keys() :
+                    Man.dict[state] = 0
+            else :
+                state = self.move_learn(state)
+                move = state[2]
+            self.cycle_list.append(state)
+            func = self.move_list[move]
+            func()
+
+    def move_random(self):
+        val = random.randrange(0,4)
+        return val
+
+    def move_learn(self, state):
+        temp_list = []
+        for i in range(4) :
+            temp = state[:]
+            temp.append(i)
+            temp = tuple(temp)
+            if temp not in Man.dict.keys() :
+                Man.dict[temp] = 0
+            temp_list.append((temp, Man.dict[temp]))
+        return max(temp_list, key = (lambda x : x[1]))[0]
+
+    def make_state(self):
+        ball_id = self.find_ball()
+        ball_position = self.get_pos(ball_id)
+        pos = self.get_pos()
+        return [tuple(round(i/10) for i in pos), tuple(round(i/10) for i in ball_position)]
+
+    def find_ball(self):
+        if len(self.ball.ball_list) > 0 :
+            ball_over = []
+            pos = self.get_pos()
+            for i in self.ball.ball_list :
+                ball_pos = self.canvas.coords(i[0])
+                if ball_pos[3] <= pos[1] :
+                    ball_over.append((i[0], ball_pos[3]))
+            return min(ball_over, key = (lambda x : x[1]))[0]
+
+
+    def reset(self):
+        self.canvas.delete(self.id)
+        self.pre_pos = None
+        self.jump = False
+        self.id = self.canvas.create_rectangle(5, 550, 35, 599)
+        self.cycle_list = []
+
+    def get_pos(self, x = None):
+        x = x or self.id
+        pos = self.canvas.coords(x)
+        return ((pos[0]+pos[2])/2, pos[3])
+
+    def draw(self):
+        base = self.get_pos()
         pos = self.canvas.coords(self.id)
-        # [ 255,29,270,44]
+        if not self.jump :
+            self.pre_pos = None
 
-        if pos[1] <= 0:
-            self.y = 3
-        if pos[3] >= self.canvas_height:
-            self.y = -3
-        if pos[0] <= 0:
-            self.x = 3
-        if pos[2] >= self.canvas_width:
-            self.x = -3
-        if self.hit_paddle(pos) == True:
-            self.y = -3
+        # 경사로 이동 & 점프 중
+        if self.y == 5 :    # 경사로 이동
+            if 525 <= base[1] <= 600 and base[0] >= 100 :
+                if self.y + base[1] >= math.ceil(-1 * (base[0] - 100) / 14 + 600) :
+                    self.y = math.ceil(-1 * (base[0] - 100) / 14 + 600) - base[1]
+                    self.jump = False
+            elif 225 <= base[1] <= 300 and base[0] >= 100 :
+                if self.y + base[1] >= math.ceil(-1 * (base[0] - 100) / 14 + 300) :
+                    self.y = math.ceil(-1 * (base[0] - 100) / 14 + 300) - base[1]
+                    self.jump = False
+            elif 375 <= base[1] <= 450 and base[0] <= 700 :
+                if self.y + base[1] >= math.ceil((base[0] / 14) + 400) :
+                    self.y = math.ceil((base[0] / 14) + 400) - base[1]
+                    self.jump = False
+            elif 75 <= base[1] <= 150 and base[0] <= 700 :
+                if self.y + base[1] >= math.ceil(base[0] / 14 + 100) :
+                    self.y = math.ceil(base[0] / 14 + 100) - base[1]
+                    self.jump = False
+            elif (0 <= base[0] <= 100) and 525 <= base[1] <= 600:
+                if self.y + base[1] > 599 :
+                    self.y = 599 - base[1]
+                    self.jump = False
+        else :  # 점프상태
+            self.pre_pos = self.pre_pos or self.get_pos()
+            if (base[1] == self.pre_pos[1] - 50) and self.y == -5 :
+                self.y += 1
+            elif (base[1] <= self.pre_pos[1] - 50) :
+                self.y += 1
 
-        self.canvas.move(self.id, self.x, self.y)  # 공을 움직이게 하는 부분
-        # 공이 화면 밖으로 나가지 않게 해준다
+        # 벽
+        if pos[0]+self.x < 0 or pos[2]+self.x > 800 :
+            if self.x < 0 :
+                self.x = pos[0]
+            elif self.x > 0 :
+                self.x = 799-pos[2]
+        self.canvas.move(self.id, self.x, self.y)
+        if not self.jump : self.y = 5
 
-
-    def keystate(self, movement):
-        paddle_pos = self.canvas.coords(self.paddle.id)
-        ball_pos = self.canvas.coords(self.id)
-        # paddle 위치(좌측 x좌표), 공의 좌상단 x/y좌표, 공의 좌우/상하 속도(방향), paddle을 좌/우 중 어느 쪽으로 움직이는지
-        return (paddle_pos[0], (ball_pos[0], ball_pos[1]), (self.x, self.y), movement)
-
-
-    # 사이클 시작 : 1, 사이클 종료 : -1, 해당 없음 : 0
-    def cyclestate(self):
+    def collision(self):
         pos = self.canvas.coords(self.id)
-        if pos[3] == PADDLE_HEIGHT:
-            if self.y == -3:
-                return START
-            elif self.y == 3:
-                return END
-        return 0
+        goal_pos = self.canvas.coords(self.goal)
+        for i in self.ball.ball_list :
+            ball_pos = self.canvas.coords(i[0])
+            if ball_pos[0] <= pos[2] and ball_pos[2] >= pos[0]:
+                if ball_pos[1] <= pos[3] and ball_pos[3] >= pos[1] :
+                    self.learning(-1)
+                    self.reset()
+                    self.ball.reset()
+                    return
+        if goal_pos[0] <= pos[2] and goal_pos[2] >= pos[0]:
+            if goal_pos[1] <= pos[3] and goal_pos[3] >= pos[1]:
+                self.learning(1)
+                self.reset()
+                self.ball.reset()
+                return
+
+    def learning(self, reward):
+        self.cycle_list.reverse()
+        for i in  self.cycle_list:
+            pre_val = Man.dict[i]
+            Man.dict[i] += 0.99*(reward - pre_val)
+            reward *= 0.99
 
 
-    # 결과 학습
-    def backup(self, newVal, idx):
-        if idx >= 0 and self.learning:
-            prevVal = self.values[self.cycle_data[idx]]
-            self.values[self.cycle_data[idx]] += self.alpha * (newVal - prevVal)
-            # print("key : {0}, val : {1}".format(self.cycle_data[idx],self.values[self.cycle_data[idx]]))
-            self.backup(newVal * self.alpha, idx - 1)
+    def turn_left(self):
+        if not self.jump:
+            self.x = -4
 
+    def turn_right(self):
+        if not self.jump:
+            self.x = 4
 
-    # 게임 끝났을 시 학습 및 cycle_data 초기화
-    def gameover(self):
-        if self.learning:
-            # paddle로 받았으면 1, 못 받았으면 -1
-            if self.is_paddle_hit():
-                result_value = self.winval
-                self.wincount += 1
+    def jump_left(self):
+        if not self.jump:
+            base = self.get_pos()
+            self.jump = True
+            if (((600 < base[0] < 700) and (base[1] > 550 or 250 < base[1] < 300))
+                or ((100 < base[0] < 200) and (400 < base[1] < 450))):
+                self.y = -15
             else:
-                result_value = self.loseval
-                self.losecount += 1
-            self.backup(result_value, len(self.cycle_data) - 1)
-            self.gamecount += 1
+                self.y = -5
+            self.x = -4
 
-            # saveterm마다 csv 저장
-            if self.gamecount % self.saveterm == 0:
-                self.writecsv()
-            if self.gamecount % self.announceterm == 0:
-                print("cycle count : {0}".format(ball.gamecount))
-        self.cycle_data.clear()
+    def jump_right(self):
+        if not self.jump:
+            base = self.get_pos()
+            self.jump = True
+            if (((600 < base[0] < 700) and (base[1] > 550 or 250 < base[1] < 300))
+                or ((100 < base[0] < 200) and (400 < base[1] < 450))):
+                self.y = -15
+            else:
+                self.y = -5
+            self.x = 4
 
+tk = Tk()
+tk.title('Game')
+tk.resizable(0, 0)
 
-    def winnerval(self, winner):
-        if winner == 'hit':
-            return 1
-        elif winner == 'miss':
-            return -1
-        else:
-            return 0
-
-
-    # 게임 결과 csv로 저장
-    def writecsv(self):
-        try:
-            # Values 저장
-            Fn = open("D:\data\pong_value.csv", 'w', newline='')
-            writer = csv.writer(Fn, delimiter=',')
-            writer.writerow([self.gamecount])  # 첫줄에 학습 게임 횟수 저장
-            keys = self.values.keys()
-            for key in keys:
-                writer.writerow([key[0],        # 패들의 x 좌표
-                                 key[1][0],     # 공의 x 좌표
-                                 key[1][1],     # 공의 y 좌표
-                                 key[2][0],     #
-                                 key[2][1],
-                                 key[3],
-                                 ball.values[key]
-                                 ])
-            Fn.close()
-
-            # 성공/실패 횟수 저장
-            Fn = open("D:\data\pong_score.csv", 'a', newline='')
-            writer = csv.writer(Fn, delimiter=',')
-            writer.writerow([self.wincount, self.losecount, self.gamecount])
-            Fn.close()
-            # 승률의 변화를 확인하기 위해 일정 판수마다 카운트 리셋
-            self.wincount = 0
-            self.losecount = 0
-
-            print("save data in cycle {0}.".format(self.gamecount))
-        except Exception as e:
-            print('save data failed in cycle {0}.\nError Type : {1}'.format(self.gamecount, type(e).__name__))
-
-
-    def loadcsv(self):
-        try:
-            Fn = open("D:\data\pong_value.csv", 'r')
-            self.gamecount = int(Fn.readline().split(',')[0])  # 첫 줄의 학습 게임 횟수 불러오기
-            reader = csv.reader(Fn, delimiter=',')
-            for key in reader:
-                self.values[(
-                int(float(key[0])), (int(float(key[1])), int(float(key[2]))), (int(float(key[3])), int(float(key[4]))),
-                int(float(key[5])))] = float(key[6])
-            print('Load Success! Start at cycle {0}'.format(self.gamecount))
-        except Exception:
-            print('Load Failed!')
-
-
-class Paddle:
-    def __init__(self, canvas, y_loc, color):
-        self.canvas = canvas
-        self.id = canvas.create_polygon(0, 0, 15, 0, 15, 15, 30, 15, 30, 0, 45, 0, 45, 100, 0, 100, fill=color)  # 패들의 높이와 넓이 그리고 색깔
-        self.canvas.move(self.id, 200, y_loc)  # 패들 사각형을 200,300 에 위치
-        self.x = 0  # 패들이 처음 시작할때 움직이지 않게 0으로 설정
-        self.canvas_width = self.canvas.winfo_width()  # 캔버스의 넓이를 반환한다. 캔버스 밖으로 패들이 나가지 않도록
-        self.canvas.bind_all('<KeyPress-Left>', self.turn_left)  # 왼쪽 화살표 키를 '<KeyPress-Left>'  라는 이름로 바인딩
-        self.canvas.bind_all('<KeyPress-Right>', self.turn_right)  # 오른쪽도 마찬가지로 바인딩한다.
-
-    def draw(self):
-        pos = self.canvas.coords(self.id)
-        # print(pos)
-        if pos[0] <= 0 and self.x < 0:  # 패들의 위치가 왼쪽 끝이고, 이동하려는 방향이 왼쪽이면 함수 종료(이동 안 함)
-            return
-        elif pos[2] >= self.canvas_width and self.x > 0:  # 패들의 위치가 오른쪽 끝이고, 이동하려는 방향이 오른쪽이면 함수 종료
-            return
-        self.canvas.move(self.id, self.x, 0)
-
-
-        # 패들이 화면의 끝에 부딪히면 공처럼 튕기는게 아니라 움직임이 멈춰야한다.
-        # 그래서 왼쪽 x 좌표(pos[0]) 가 0 과 같거나 작으면 self.x = 0 처럼 x 변수에 0 을
-        # 설정한다.  같은 방법으로 오른쪽 x 좌표(pos[2]) 가 캔버스의 폭과 같거나 크면
-        # self.x = 0 처럼 변수에 0 을 설정한다.
-
-    def turn_left(self, evt):  # 패들의 방향을 전환하는 함수
-        self.x = -3
-
-    def turn_right(self, evt):
-        self.x = 3
-
-    def move(self, x):
-        self.x = x
-
-
-'''
-LYE
-1. cyclestart 함수 추가(공이 딱 패들의 높이를 지나 위로 출발하는 시점에 True)
-2. 캔버스 높이 및 공/패들 시작점 조정(y 좌표가 3의 배수로 떨어지게)
-'''
-
-if __name__ == '__main__':
-    tk = Tk()  # tk 를 인스턴스화 한다.
-    tk.title("Game")  # tk 객체의 title 메소드(함수)로 게임창에 제목을 부여한다.
-    tk.resizable(0, 0)  # 게임창의 크기는 가로나 세로로 변경될수 없다라고 말하는것이다.
-    tk.wm_attributes("-topmost", 1)  # 다른 모든 창들 앞에 캔버스를 가진 창이 위치할것을 tkinter 에게 알려준다.
-
-    canvas = Canvas(tk, width=500, height=450, bd=0, highlightthickness=0)
-    # bg=0,highlightthickness=0 은 캔버스 외곽에 둘러싼
-    # 외곽선이 없도록 하는것이다. (게임화면이 좀더 좋게)
-    canvas.pack()  # 앞의 코드에서 전달된 폭과 높이는 매개변수에 따라 크기를 맞추라고 캔버스에에 말해준다.
-    tk.update()  # tkinter 에게 게임에서의 애니메이션을 위해 자신을 초기화하라고 알려주는것이다.
-    paddle = Paddle(canvas, PADDLE_HEIGHT, 'blue')
-    # paddle = Paddle(canvas, PADDLE_HEIGHT1, 'blue')
-
-    # announceterm : 현재 count 출력 term, saveterm : csv에 저장하는 term
-    ball = Ball(canvas, paddle, 'red', announceterm=500, saveterm=100)
-    start = False
-    # 공을 약간 움직이고 새로운 위치로 화면을 다시 그리며, 잠깐 잠들었다가 다시 시작해 ! "
-    is_cycling = False
-
-    while 1:
-        ball.draw()
-
-        c_state = ball.cyclestate()
-        if c_state == END:
-            # print('END')
-            ball.gameover()
-            is_cycling = False
-        if c_state == START or ball.is_paddle_hit():
-            # print('START')
-            is_cycling = True
-
-        if is_cycling:
-            ball.action()
-
-        tk.update_idletasks()  # 우리가 창을 닫으라고 할때까지 계속해서 tkinter 에게 화면을 그려라 !
-        tk.update()  # tkinter 에게 게임에서의 애니메이션을 위해 자신을 초기화하라고 알려주는것이다.
-
-        #10만번 학습 후에 정상 속도로 플레이 시작(학습 결과 반영됨)
-        if ball.gamecount > 1:
-            time.sleep(0.005)  # 무한 루프중에 100분의 1초마다 잠들어라 !
+canvas = Canvas(tk, width = 800, height = 600, bd = 0, highlightthickness= 0)
+canvas.pack()
+tk.update()
+map = Map(canvas)
+ball = Ball(canvas)
+man = Man(canvas, ball)
+while True :
+    man.play()
+    ball.draw()
+    man.draw()
+    man.collision()
+    tk.update_idletasks()
+    tk.update()
+    if man.val :
+        time.sleep(0.02)

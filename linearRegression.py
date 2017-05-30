@@ -23,7 +23,9 @@ a, b = np.linalg.lstsq(A, y)[0] #Return the least-squares solution to a linear m
 
 #산점도
 plt.plot(x, y, 'o', label='data', markersize=8)
+plt.hold(True)
 plt.plot(x, a*x + b, 'r', label='Fitted line')
+plt.hold(False)
 plt.legend()
 plt.show()
 #회귀식
@@ -74,11 +76,11 @@ print ( least_squares_fit2(x,y))
 ############################ 단순 선형 회귀 시각화 ######################################
 
 import pandas as pd
-# import statsmodels.formula.api as smf
+import statsmodels.formula.api as smf
 from matplotlib import pyplot as plt
 import numpy as np
 
-df = pd.read_csv('d:\data\Chapter6\sports.csv', index_col=0)
+df = pd.read_csv('D:\data\sports.csv', index_col=0)
 
 fig, axs = plt.subplots(1, 3, 'row')
 
