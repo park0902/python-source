@@ -9,6 +9,9 @@
 
 # 파일 경로
 # d:\data\\final_incheon_airport1.csv
+import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib as mpl
 csv_file = input('파일경로와 파일명 입력 하시오: ')
 question = int(input('보고싶은 시각화 번호를 선택 하시오\n'
                      '1. 카테고리 그래프 \n'
@@ -23,6 +26,7 @@ question = int(input('보고싶은 시각화 번호를 선택 하시오\n'
 
 
 class Visualization:
+
     # 카테고리에 해당하는 선그래프 출력
     def RKSI_2016_category(self):
         if question == 1:
@@ -34,9 +38,7 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import matplotlib.pyplot as plt
-            import pandas as pd
-            import matplotlib as mpl
+
             mpl.rc('font', family='Malgun Gothic')
             mpl.rc('axes', unicode_minus=False)
 
@@ -214,6 +216,9 @@ class Visualization:
             from matplotlib import font_manager, rc
             from matplotlib import style
             import pandas as pd
+            import matplotlib as mpl
+            mpl.rc('font', family='Malgun Gothic')
+            mpl.rc('axes', unicode_minus=False)
             m = int(input('월 입력 : '))
             label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
                      'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)',
@@ -224,7 +229,7 @@ class Visualization:
 
             if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 10 or m == 12:
                 df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
-                maxwind = list(df['maxwind'][df['month'] == 8])
+                maxwind = list(df[category][df['month'] == m])
                 month = range(1, 32)
                 font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
                 rc('font', family=font_name)
@@ -239,10 +244,10 @@ class Visualization:
                 for i, rect in enumerate(rects):
                     ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]) ,
                             ha='center')
-                plt.ylabel('등락률')
-                plt.ylabel('풍속(km/h)')
-                plt.xlabel('일')
-                plt.title('8월 최고 풍속')
+                plt.ylabel(u'등락률')
+                plt.ylabel(u'풍속(km/h)')
+                plt.xlabel(u'일')
+                plt.title(title[category])
                 plt.show()
 
             elif m == 4 or m == 6 or m == 9 or m == 11:
@@ -253,7 +258,7 @@ class Visualization:
                 import pandas as pd
 
                 df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
-                maxwind = list(df['maxwind'][df['month'] == 8])
+                maxwind = list(df[category][df['month'] == m])
                 month = range(1, 31)
                 font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
                 rc('font', family=font_name)
@@ -268,10 +273,10 @@ class Visualization:
                 for i, rect in enumerate(rects):
                     ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]) + '%',
                             ha='center')
-                plt.ylabel('등락률')
-                plt.ylabel('풍속(km/h)')
-                plt.xlabel('일')
-                plt.title('8월 최고 풍속')
+                plt.ylabel(u'등락률')
+                plt.ylabel(u'풍속(km/h)')
+                plt.xlabel(u'일')
+                plt.title(u'8월 최고 풍속')
                 plt.show()
             else:
                 import matplotlib.pyplot as plt
@@ -281,7 +286,7 @@ class Visualization:
                 import pandas as pd
 
                 df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
-                maxwind = list(df['maxwind'][df['month'] == 8])
+                maxwind = list(df[category][df['month'] == m])
                 month = range(1, 30)
                 font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
                 rc('font', family=font_name)
@@ -296,50 +301,92 @@ class Visualization:
                 for i, rect in enumerate(rects):
                     ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]) + '%',
                             ha='center')
-                plt.ylabel('등락률')
-                plt.ylabel('풍속(km/h)')
-                plt.xlabel('일')
-                plt.title('8월 최고 풍속')
+                plt.ylabel(u'등락률')
+                plt.ylabel(u'풍속(km/h)')
+                plt.xlabel(u'일')
+                plt.title(u'8월 최고 풍속')
                 plt.show()
 
 
     # 월의 카테고리별 바 그래프(수직)
     def RKSI_2016_bar_ver(self):
-            if question == 6:
-                category = input('카테고리 입력 \n'
-                                 '- mean(평균기온) \n'
-                                 '- max(최고기온) \n'
-                                 '- min(최소기온) \n'
-                                 '- dew(이슬점) \n'
-                                 '- wind(평균풍속) \n'
-                                 '- maxwind(최고풍속) \n'
-                                 '- vis(가시도) \n')
-                import pandas as pd
-                m = int(input('월 입력 : '))
-                if m == 1 or m == 3 or m ==5 or m==7 or m==8 or m==10 or m==12:
-                    df = pd.read_csv(csv_file)
-                    re = list(df[category][df['month'] == m])
-                    month = range(1,32)
-                    df = pd.DataFrame(re, index=month, columns=pd.Index([category]))
-                    df.plot(kind='bar', color='b', alpha=0.5)
-
-                elif m ==4 or m==6 or m==9 or m==11:
-                    df = pd.read_csv(csv_file)
-                    re = list(df[category][df['month'] == m])
-
-                    month = range(1, 31)
-
-                    df = pd.DataFrame(re, index=month, columns=pd.Index([category]))
-                    df.plot(kind='bar', color='b', alpha=0.5)
-
-                else:
-                    df = pd.read_csv(csv_file)
-                    re = list(df[category][df['month'] == m])
-
-                    month = range(1, 30)
-
-                    df = pd.DataFrame(re, index=month, columns=pd.Index([category]))
-                    df.plot(kind='bar', color='b', alpha=0.5)
+        if question == 6:
+            category = input('카테고리 입력 \n'
+                             '- mean(평균기온) \n'
+                             '- max(최고기온) \n'
+                             '- min(최소기온) \n'
+                             '- dew(이슬점) \n'
+                             '- wind(평균풍속) \n'
+                             '- maxwind(최고풍속) \n'
+                             '- vis(가시도) \n')
+            import matplotlib.pyplot as plt
+            from matplotlib import font_manager, rc
+            from matplotlib import style
+            import pandas as pd
+            m = int(input('월 입력 : '))
+            if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 10 or m == 12:
+                df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+                maxwind = list(df[category][df['month'] == m])
+                month = range(1, 32)
+                font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+                rc('font', family=font_name)
+                style.use('ggplot')
+                industry = month
+                fluctuations = maxwind
+                fig = plt.figure(figsize=(12, 8))
+                ax = fig.add_subplot(111)
+                pos = np.arange(31)
+                rects = plt.bar(pos, fluctuations, align='center', width=0.5)
+                plt.xticks(pos, industry)
+                for i, rect in enumerate(rects):
+                    ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]), ha='center')
+                plt.ylabel('등락률')
+                plt.ylabel('풍속(km/h)')
+                plt.xlabel('일')
+                plt.title('8월 최고 풍속')
+                plt.show()
+            elif m == 4 or m == 6 or m == 9 or m == 11:
+                df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+                maxwind = list(df[category][df['month'] == m])
+                month = range(1, 31)
+                font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+                rc('font', family=font_name)
+                style.use('ggplot')
+                industry = month
+                fluctuations = maxwind
+                fig = plt.figure(figsize=(12, 8))
+                ax = fig.add_subplot(111)
+                pos = np.arange(30)
+                rects = plt.bar(pos, fluctuations, align='center', width=0.5)
+                plt.xticks(pos, industry)
+                for i, rect in enumerate(rects):
+                    ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]), ha='center')
+                plt.ylabel('등락률')
+                plt.ylabel('풍속(km/h)')
+                plt.xlabel('일')
+                plt.title('8월 최고 풍속')
+                plt.show()
+            else:
+                df = pd.read_csv("e:\data\\final_incheon_airport1.csv")
+                maxwind = list(df[category][df['month'] == m])
+                month = range(1, 30)
+                font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+                rc('font', family=font_name)
+                style.use('ggplot')
+                industry = month
+                fluctuations = maxwind
+                fig = plt.figure(figsize=(12, 8))
+                ax = fig.add_subplot(111)
+                pos = np.arange(29)
+                rects = plt.bar(pos, fluctuations, align='center', width=0.5)
+                plt.xticks(pos, industry)
+                for i, rect in enumerate(rects):
+                    ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]), ha='center')
+                plt.ylabel('등락률')
+                plt.ylabel('풍속(km/h)')
+                plt.xlabel('일')
+                plt.title('8월 최고 풍속')
+                plt.show()
 
 
     # 카테고리별 산포도 그리기

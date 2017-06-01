@@ -12,7 +12,10 @@ question = int(input('보고싶은 시각화 번호를 선택 하시오\n'
                      '8. (온도-이슬점) & 가시도 관계 그래프 \n'
                      '9. 가시도 & (온도-이슬점) 관계 산포도 및 선형 회귀 그래프 \n'))
 
-
+import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib as mpl
+import numpy as np
 class Visualization:
     # 카테고리에 해당하는 선그래프 출력
     def RKSI_2016_category(self):
@@ -25,8 +28,8 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import matplotlib.pyplot as plt
-            import pandas as pd
+            # import matplotlib.pyplot as plt
+            # import pandas as pd
             fig = plt.figure(); ax = fig.add_subplot(1,1,1)
             df = pd.read_csv(csv_file)
             max = list(df[category])
@@ -60,9 +63,9 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import matplotlib.pyplot as plt
-            import pandas as pd
-            import matplotlib as mpl
+            # import matplotlib.pyplot as plt
+            # import pandas as pd
+            # import matplotlib as mpl
             mpl.rc('font', family='Malgun Gothic')
             mpl.rc('axes', unicode_minus=False)
 
@@ -115,9 +118,9 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import matplotlib.pyplot as plt
-            import pandas as pd
-            import matplotlib as mpl
+            # import matplotlib.pyplot as plt
+            # import pandas as pd
+            # import matplotlib as mpl
             mpl.rc('font', family='Malgun Gothic')
             mpl.rc('axes', unicode_minus=False)
 
@@ -158,9 +161,9 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import matplotlib.pyplot as plt
-            import pandas as pd
-            import matplotlib as mpl
+            # import matplotlib.pyplot as plt
+            # import pandas as pd
+            # import matplotlib as mpl
             mpl.rc('font', family='Malgun Gothic')
             mpl.rc('axes', unicode_minus=False)
 
@@ -201,7 +204,7 @@ class Visualization:
                              '- wind(평균풍속) \n'
                              '- maxwind(최고풍속) \n'
                              '- vis(가시도) \n')
-            import pandas as pd
+            # import pandas as pd
             m = int(input('월 입력 : '))
             if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 10 or m == 12:
                 df = pd.read_csv(csv_file)
@@ -240,7 +243,7 @@ class Visualization:
                                  '- wind(평균풍속) \n'
                                  '- maxwind(최고풍속) \n'
                                  '- vis(가시도) \n')
-                import pandas as pd
+                # import pandas as pd
                 m = int(input('월 입력 : '))
                 if m == 1 or m == 3 or m ==5 or m==7 or m==8 or m==10 or m==12:
                     df = pd.read_csv(csv_file)
@@ -287,9 +290,9 @@ class Visualization:
                               '- wind(평균풍속) \n'
                               '- maxwind(최고풍속) \n'
                               '- vis(가시도) \n')
-        import matplotlib.pyplot as plt
-        import pandas as pd
-        import matplotlib as mpl
+        # import matplotlib.pyplot as plt
+        # import pandas as pd
+        # import matplotlib as mpl
         mpl.rc('font', family='Malgun Gothic')
         mpl.rc('axes', unicode_minus=False)
 
@@ -310,9 +313,9 @@ class Visualization:
 
     # (온도-이슬점) & 가시도 관계 그래프
     def Min_Dew_Vis(self):
-        import matplotlib.pyplot as plt
-        import pandas as pd
-        import numpy as np
+        # import matplotlib.pyplot as plt
+        # import pandas as pd
+        # import numpy as np
 
         df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 
@@ -344,9 +347,9 @@ class Visualization:
 
     # 가시도 & (온도-이슬점) 관계 산포도 및 선형 회귀 그래프
     def LinearRegression(self):
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import pandas as pd
+        # import numpy as np
+        # import matplotlib.pyplot as plt
+        # import pandas as pd
 
         df = pd.read_csv(csv_file)
         mean = np.array(df['mean'])
