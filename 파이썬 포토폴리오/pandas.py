@@ -142,6 +142,7 @@ plt.show()
 '''
 import pandas as pd
 
+
 df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
 vis = list(df['min'][df['month'] == 3])
 
@@ -214,33 +215,27 @@ from matplotlib import style
 import pandas as pd
 
 df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
-
 maxwind = list(df['maxwind'][df['month'] == 8])
-
 month = range(1, 32)
-
 font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
 rc('font', family=font_name)
 style.use('ggplot')
-
 industry = month
 fluctuations = maxwind
 fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(111)
-
 pos = np.arange(31)
 rects = plt.bar(pos, fluctuations, align='center', width=0.5)
 plt.xticks(pos, industry)
-
 for i, rect in enumerate(rects):
     ax.text(rect.get_x() + rect.get_width() / 2.0, 0.95 * rect.get_height(), str(fluctuations[i]) + '%', ha='center')
-
 plt.ylabel('등락률')
 plt.ylabel('풍속(km/h)')
 plt.xlabel('일')
 plt.title('8월 최고 풍속')
 plt.show()
 
+# Malgun Gothic
 
 
 

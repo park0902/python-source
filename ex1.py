@@ -140,3 +140,71 @@ plt.ylabel('Temperature(°C)')
 plt.legend(loc=3)
 
 plt.show()
+
+
+
+import matplotlib as mpl
+
+a = set(sorted([f.name for f in mpl.font_manager.fontManager.ttflist]))
+
+for i in a:
+    print(i)
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+mpl.rc('font', family='Malgun Gothic')
+mpl.rc('axes', unicode_minus=False)
+
+
+x = np.linspace(0.0, 5.0, 100)
+y = np.cos(2*np.pi*x) * np.exp(-x)
+plt.title(u'한글 제목')
+plt.plot(x, y, label=u"코사인")
+t = 2 * np.pi / 3
+plt.scatter(t, np.cos(t), 50, color='blue')
+plt.xlabel(u"엑스축 라벨")
+plt.ylabel(u"와이축 라벨")
+plt.annotate(u"여기가 0.5!", xy=(t, np.cos(t)), xycoords='data', xytext=(-90, -50),
+             textcoords='offset points', fontsize=16, arrowprops=dict(arrowstyle="->"))
+plt.show()
+
+
+
+
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
+mpl.rc('font', family='Malgun Gothic')
+mpl.rc('axes', unicode_minus=False)
+
+df = pd.read_csv(csv_file)
+month = range(1, 30)
+month1 = range(1, 32)
+
+wind_1 = list(df['wind'][df['month']==2])
+wind_8 = list(df['wind'][df['month']==8])
+
+plt.xlim(1, 32)
+plt.ylim(0, 40)
+
+plt.subplot(2,1,1)
+plt.plot(month, wind_1, 'yo-')
+plt.title(u"가나다라마바사")
+plt.xlabel(u'가나다라 January')
+plt.ylabel('Wind speed(km/h)')
+
+plt.subplot(2,1,2)
+plt.plot(month1, wind_8, 'r.-')
+plt.xlabel('August')
+plt.ylabel('Wind speed(km/h)')
+
+plt.show()

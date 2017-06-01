@@ -1,31 +1,36 @@
 csv_file = input('파일경로와 파일명 입력: ')
-question = int(input('보고싶은 시각화 선택(1. 카테고리 그래프 2. 월별 카테고리 그래프 3. 여름 카테고리별 그래프 4. 겨울 카테고리별 그래프 '
+question = int(input('보고싶은 시각화 선택(1. 카테고리 그래프 2. 월별 카테고리 그래프 3. 여름 카테고리별 그래프 4. 겨울 카테고리별 그래프 \n'
                      '5. 카테고리별 바 그래프(수평) 6. 카테고리별 바 그래프(수직) 7. 가시도 & (온도-이슬점) 관계 산포도 및 선형 회귀 그래프'))
-category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
+
 
 # d:\data\\final_incheon_airport1.csv
 
+# 카테고리에 해당하는 선그래프 출력
 def RKSI_2016_category():
-    import matplotlib.pyplot as plt
-    import pandas as pd
-    fig = plt.figure(); ax = fig.add_subplot(1,1,1)
-    df = pd.read_csv(csv_file)
-    max = list(df[category])
-    month =range(1, 367)
-    plt.plot(month, max, label=category, c="y")
-    ax.set_xticks([0,31,60,91,121,151,181,212,243,273,304,334.366])
-    ax.set_xticklabels(['January','February','March','April','May','Jun','July','August','September',
-                                 'October','November','December'], rotation=30)
-    ax.set_title('RKSI Monthly '+category+'(2016)')
-    plt.xlabel('Months')
-    label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
-             'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)', 'vis': 'Visibility(km)'}
-    plt.ylabel(label[category])
-    ax.legend(loc='best')
-    plt.show()
+    if question == 1:
+        category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
+        import matplotlib.pyplot as plt
+        import pandas as pd
+        fig = plt.figure(); ax = fig.add_subplot(1,1,1)
+        df = pd.read_csv(csv_file)
+        max = list(df[category])
+        month =range(1, 367)
+        plt.plot(month, max, label=category, c="y")
+        ax.set_xticks([0,31,60,91,121,151,181,212,243,273,304,334.366])
+        ax.set_xticklabels(['January','February','March','April','May','Jun','July','August','September',
+                                     'October','November','December'], rotation=30)
+        ax.set_title('RKSI Monthly '+category+'(2016)')
+        plt.xlabel('Months')
+        label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
+                 'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)', 'vis': 'Visibility(km)'}
+        plt.ylabel(label[category])
+        ax.legend(loc='best')
+        plt.show()
 
-
+# 카테고리에 해당하는 선그래프를 월별로 출력
 def RKSI_2016_monthly():
+    if question == 2:
+        category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
         import matplotlib.pyplot as plt
         import pandas as pd
 
@@ -71,75 +76,80 @@ def RKSI_2016_monthly():
 
         plt.show()
 
-
+# 여름(6,7,8월)의 카테고리별 선그래프 출력
 def RKSI_2016_summer_category():
-    import matplotlib.pyplot as plt
-    import pandas as pd
+    if question == 3:
+        category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
+        import matplotlib.pyplot as plt
+        import pandas as pd
 
-    df = pd.read_csv(csv_file)
+        df = pd.read_csv(csv_file)
 
-    month1 = range(1, 30)
-    month2 = range(1, 31)
-    month3 = range(1, 32)
+        month1 = range(1, 30)
+        month2 = range(1, 31)
+        month3 = range(1, 32)
 
-    re6 = list(df[category][df['month'] == 6])
-    re7 = list(df[category][df['month'] == 7])
-    re8 = list(df[category][df['month'] == 8])
+        re6 = list(df[category][df['month'] == 6])
+        re7 = list(df[category][df['month'] == 7])
+        re8 = list(df[category][df['month'] == 8])
 
-    plt.plot(month2, re6, label='Jun', c="b", lw=1, ls=":", marker="D")
-    plt.hold(True)
-    plt.plot(month3, re7, label='July', c="g", lw=1, ls=":", marker="s")
-    plt.hold(True)
-    plt.plot(month3, re8, label='August', c="y", lw=1, ls=":", marker="o")
-    plt.hold(True)
+        plt.plot(month2, re6, label='Jun', c="b", lw=1, ls=":", marker="D")
+        plt.hold(True)
+        plt.plot(month3, re7, label='July', c="g", lw=1, ls=":", marker="s")
+        plt.hold(True)
+        plt.plot(month3, re8, label='August', c="y", lw=1, ls=":", marker="o")
+        plt.hold(True)
 
-    label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
-             'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)',
-             'vis': 'Visibility(km)'}
+        label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
+                 'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)',
+                 'vis': 'Visibility(km)'}
 
-    plt.title('Summer '+category)
-    plt.xlabel('Days')
-    plt.ylabel(label[category])
-    plt.legend(loc=3)
+        plt.title('Summer '+category)
+        plt.xlabel('Days')
+        plt.ylabel(label[category])
+        plt.legend(loc=3)
 
-    plt.show()
+        plt.show()
 
-
+# 겨울(12,1,2월)의 카테고리별 선그래프 출력
 def RKSI_2016_winter_category():
-    import matplotlib.pyplot as plt
-    import pandas as pd
+    if question == 4:
+        category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
+        import matplotlib.pyplot as plt
+        import pandas as pd
 
-    df = pd.read_csv("d:\data\\final_incheon_airport1.csv")
+        df = pd.read_csv(csv_file)
 
-    month1 = range(1, 30)
-    month2 = range(1, 31)
-    month3 = range(1, 32)
+        month1 = range(1, 30)
+        month2 = range(1, 31)
+        month3 = range(1, 32)
 
-    re12 = list(df['max'][df['month'] == 12])
-    re1 = list(df['max'][df['month'] == 1])
-    re2 = list(df['max'][df['month'] == 2])
+        re12 = list(df[category][df['month'] == 12])
+        re1 = list(df[category][df['month'] == 1])
+        re2 = list(df[category][df['month'] == 2])
 
-    plt.plot(month3, re12, label='Jun', c="b", lw=1, ls=":", marker="D")
-    plt.hold(True)
-    plt.plot(month3, re1, label='July', c="g", lw=1, ls=":", marker="s")
-    plt.hold(True)
-    plt.plot(month1, re2, label='August', c="y", lw=1, ls=":", marker="o")
-    plt.hold(True)
+        plt.plot(month3, re12, label='Jun', c="b", lw=1, ls=":", marker="D")
+        plt.hold(True)
+        plt.plot(month3, re1, label='July', c="g", lw=1, ls=":", marker="s")
+        plt.hold(True)
+        plt.plot(month1, re2, label='August', c="y", lw=1, ls=":", marker="o")
+        plt.hold(True)
 
-    label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
-             'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)',
-             'vis': 'Visibility(km)'}
+        label = {'mean': 'Temperauture(°C)', 'max': 'Temperauture(°C)', 'min': 'Temperauture(°C)',
+                 'dew': 'Temperauture(°C)', 'wind': 'Wind Speed(km/h)', 'maxwind': 'Wind Speed(km/h)',
+                 'vis': 'Visibility(km)'}
 
-    plt.title('Winter '+category)
-    plt.xlabel('Days')
-    plt.ylabel(label[category])
-    plt.legend(loc=3)
+        plt.title('Winter '+category)
+        plt.xlabel('Days')
+        plt.ylabel(label[category])
+        plt.legend(loc=3)
 
-    plt.show()
+        plt.show()
 
 
 def RKSI_2016_bar_hor():
     if question == 5:
+        category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
         import pandas as pd
         m = int(input('월 입력 : '))
         if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 10 or m == 12:
@@ -167,8 +177,10 @@ def RKSI_2016_bar_hor():
             df = pd.DataFrame(re, index=month, columns=pd.Index([category]))
             df.plot(kind='barh', color='b', alpha=0.5)
 
+
 def RKSI_2016_bar_ver():
         if question == 6:
+            category = input('카테고리 입력(mean, max, min, dew, wind, maxwind, vis)')
             import pandas as pd
             m = int(input('월 입력 : '))
             if m == 1 or m == 3 or m ==5 or m==7 or m==8 or m==10 or m==12:
