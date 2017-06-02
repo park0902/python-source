@@ -133,9 +133,9 @@ class Visualization:
         month1 = range(1, 30);month3 = range(1, 32)
         re12 = list(df[category][df['month'] == 12]);re1 = list(df[category][df['month'] == 1]);re2 = list(df[category][df['month'] == 2])
 
-        plt.plot(month3, re12, label='Jun', c="b", lw=1, ls=":", marker="D");plt.hold(True)
-        plt.plot(month3, re1, label='July', c="g", lw=1, ls=":", marker="s");plt.hold(True)
-        plt.plot(month1, re2, label='August', c="y", lw=1, ls=":", marker="o");plt.hold(True)
+        plt.plot(month3, re12, label='Jun', c="b", lw=1, ls=":", marker="D")
+        plt.plot(month3, re1, label='July', c="g", lw=1, ls=":", marker="s")
+        plt.plot(month1, re2, label='August', c="y", lw=1, ls=":", marker="o")
         plt.title(u'겨울 ' + Visualization.title[category])
         plt.xlabel('Days');plt.ylabel(Visualization.label[category]);plt.legend(loc=3)
         plt.show()
