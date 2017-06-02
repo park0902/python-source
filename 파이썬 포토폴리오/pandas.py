@@ -196,7 +196,7 @@ rects = plt.barh(ypos, fluctuations, align='center', height=0.5)
 plt.yticks(ypos, industry)
 
 for i, rect in enumerate(rects):
-    ax.text(0.95 * rect.get_width(), rect.get_y() + rect.get_height() / 2.0, str(fluctuations[i]) + 'km/h', ha='right', va='center')
+    ax.text(0.95 * rect.get_width(), rect.get_y() + rect.get_height() / 2.0, str(fluctuations[i]) , ha='right', va='center')
 
 plt.xlabel('풍속(km/h)')
 plt.ylabel('일')
