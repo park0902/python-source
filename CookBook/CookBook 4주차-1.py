@@ -421,3 +421,562 @@ tempfile.gettempdir()
 
 f = NamedTemporaryFile(prefix='mytemp', suffix='.txt', dir='/tmp')
 f.name
+
+
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+Chapter 6 데이터 인코딩과 프로세싱
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+6.1 CSV 데이터 읽고 쓰기
+
+문제 : CSV 파일로 인코딩된 데이터를 읽거나 쓰기
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- 대부분의 CSV 데이터는 csv 라이브러리 사용
+  데이터를 읽어 튜플 시퀀스에 넣을 수 있는 코드 
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+with open('e:\data\glass.csv') as f:
+    f_csv = csv.reader(f)
+    headers = next(f_csv)
+    for row in f_csv:
+        print(row)
+
+'''
+=> 위 코드에서 row는 튜플이 된다
+   따라서 특정 필드에 접근하려면 row[0](symbol), row[4](change) 와 같이 인덱스 사용
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- 인덱스 사용이 때때로 헷갈리기 때문에 네임드 튜플 사용 
+--------------------------------------------------------------------------------------
+'''
+
+from collections import namedtuple
+
+with open('e:\data\glass.csv') as f:
+    f_csv = csv.reader(f)
+    headings = next(f_csv)
+    Row = namedtuple('Row', headings)
+    for r in f_csv:
+        row = Row(*r)
+        print(row)
+
+'''
+--------------------------------------------------------------------------------------
+- 데이터를 딕셔너리 시퀀스로 읽기
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+with open('e:\data\glass.csv') as f:
+    f_csv = csv.DictReader(f)
+    for row in f_csv:
+        print(row)
+
+'''
+--------------------------------------------------------------------------------------
+- CSV 데이터 쓰기
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [('AA', 39.48, '6/11/2007', '9:36am', -0.18, 181800),
+        ('AIG', 71.38, '6/11/2007', '9:36am', -0.15, 195500),
+        ('AXP', 62.58, '6/11/2007', '9:36am', -0.46, 935000)]
+
+with open('e:\data\sample.csv','w') as f:
+    f_csv = csv.writer(f)
+    f_csv.writerow(headers)
+    f_csv.writerows(rows)
+
+'''
+--------------------------------------------------------------------------------------
+- 데이터를 딕셔너리 시퀀스로 가지고 있을 때 CSV 데이터 쓰기
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [{'Symbol':'AA', 'Price':39.48, 'Date':'6/11/2007',
+         'Time':'9:36am', 'Change':-0.18, 'Volume':181800},
+        {'Symbol':'AIG', 'Price': 71.38, 'Date':'6/11/2007',
+         'Time':'9:36am', 'Change':-0.15, 'Volume': 195500},
+        {'Symbol':'AXP', 'Price': 62.58, 'Date':'6/11/2007',
+         'Time':'9:36am', 'Change':-0.46, 'Volume': 935000}]
+
+with open('e:\data\sample.csv','w') as f:
+    f_csv = csv.DictWriter(f, headers)
+    f_csv.writeheader()
+    f_csv.writerows(rows)
+
+'''
+--------------------------------------------------------------------------------------
+- 탭으로 구분된 값 읽기
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+with open('e:\data\sample.csv') as f:
+    f_csv = csv.reader(f, delimiter='\t')
+    for row in f_csv:
+        print(row)
+
+'''
+--------------------------------------------------------------------------------------
+- 정규 표현식을 사용해서 유효하지 않은 문자를 치환
+--------------------------------------------------------------------------------------
+'''
+
+import re
+
+with open('e:\data\sample.csv') as f:
+    f_csv = csv.reader(f)
+    headers = [re.sub('[^a-zA-Z_]', '_', h) for h in next(f_csv)]
+    Row = namedtuple('Row', headers)
+    for r in f_csv:
+        row = Row(*r)
+        print(row)
+
+'''
+--------------------------------------------------------------------------------------
+- CSV 데이터에 대해서 추가적인 형식 변환
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+col_types = ['Symbol', 'Price',	'Date',	'Time',	'Change	Volume']
+
+with open('e:/data/sample.csv') as f:
+    f_csv = csv.reader(f)
+    headers = next(f_csv)
+    for row in f_csv:
+        row = tuple(convert(value) for convert, value in zip(col_types, row))
+        print(row)
+
+'''
+--------------------------------------------------------------------------------------
+- 딕셔너리에서 선택한 필드만 변환
+--------------------------------------------------------------------------------------
+'''
+
+import csv
+
+print('Reading as dicts with type conversion')
+
+field_types = [('Price', float),
+               ('Change', float),
+               ('Volume', int)]
+
+with open('e:/data/sample.csv') as f:
+    for row in csv.DictReader(f):
+        row.update((key, conversion(row[key]))
+                   for key, conversion in field_types)
+        print(row)
+
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+6.2 JSON 데이터 읽고 쓰기
+
+문제 : JSON(JavaScript Object Notation) 으로 인코딩된 데이터 읽거나 쓰기
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- JSON으로 데이터를 인코딩, 디코딩하는 쉬운 방법은 json 모듈 사용
+  
+- 주요 함수는 json.dumps(), json.loads(), pickle 과 같은 직렬화 라이브러리에서 사용한 것과 인터페이스는 동일
+--------------------------------------------------------------------------------------
+'''
+
+import json
+
+data = {'name' : 'ACME', 'shares' : 100, 'price' : 542.23}
+json_str = json.dumps(data)
+
+print(json_str)
+
+'''
+--------------------------------------------------------------------------------------
+- JSON 인코딩된 문자열을 파이썬 자료 구조로 돌리는 코드
+--------------------------------------------------------------------------------------
+'''
+
+data = json.loads(json_str)
+
+'''
+--------------------------------------------------------------------------------------
+- 문자열이 아닌 파일로 작업한다면 json.dump() 와 json.load() 를 사용해서 JSON 데이터 인코딩/디코딩
+--------------------------------------------------------------------------------------
+'''
+
+import json
+
+# JSON 데이터 쓰기
+with open('d:/data/data.json', 'w') as f:
+    json.dump(data, f)
+
+# 데이터 다시 읽기
+with open('d:/data/data.json', 'r') as f:
+    data = json.load(f)
+
+'''
+--------------------------------------------------------------------------------------
+- JSON 인코딩은 None, bool, int, float, str 과 같은 기본 타입과 함께 리스트, 튜플, 딕셔너리와 같은
+  컨테이너 타입 지원 (딕셔너리의 경우 키는 문자열로 가정)
+  
+- JSON 스펙을 따르기 위해서 파이썬 리스트와 딕셔너리만 인코딩해야 한다
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- True 는 true, False 는 false 로 None 은 null 로 매핑 되는 코드
+--------------------------------------------------------------------------------------
+'''
+
+import json
+
+print(json.dumps(False))
+
+d = {'a' : True, 'b' : 'Hello', 'c' : None}
+
+print(json.dumps(d))
+
+'''
+--------------------------------------------------------------------------------------
+- 데이터에 중첩이 심하게 된 구조체가 포함되어 있거나 필드가 많다면 더 어렵다
+  이 경우 pprint 모듈의 pprint() 함수 사용
+  
+- 이 함수는 키를 알파벳 순으로 나열하고 딕셔너리를 좀 더 보기 좋게 출력
+
+- 트위터의 검색 결과를 더 예쁘게 출력하는 코드
+--------------------------------------------------------------------------------------
+'''
+
+from urllib.request import urlopen
+import json
+from pprint import pprint
+
+u = urlopen('https://twitter.com/search.json?q=python&rpp=5')
+resp = json.loads(u.read().decode('utf-8'))
+
+pprint(resp)
+
+'''
+--------------------------------------------------------------------------------------
+- 일반적으로 JSON 디코딩은 제공 받은 데이터로부터 딕셔너리나 리스트 생성
+
+- 다른 종류의 객체를 만들고 싶다면 json.loads() 에 object_pairs_hook 나 object_hook 를 넣는다
+
+- OrdereDict의 순서를 지키면서 JSON 데이터를 디코딩하는 코드
+--------------------------------------------------------------------------------------
+'''
+
+from collections import OrderedDict
+
+s = '{"name": "ACME", "shares": 50, "price": 490.1}'
+data = json.loads(s, object_pairs_hook=OrderedDict)
+
+print(data)
+
+'''
+--------------------------------------------------------------------------------------
+- JSON 딕셔너리를 파이썬 객체로 바꾸기
+--------------------------------------------------------------------------------------
+'''
+
+import json
+
+class JSONObject:
+    def __init__(self, d):
+        self.__dict__ = d
+
+data = json.loads(s, object_hook=JSONObject)
+
+print(data.name)
+print(data.shares)
+print(data.price)
+
+'''
+--------------------------------------------------------------------------------------
+- JSON 데이터를 디코딩하여 생성한 딕셔너리를 __init__()에 인자로 전달
+
+- 출력을 더 보기 좋게 하려면 json.dumps() 에 ident 인자 사용
+--------------------------------------------------------------------------------------
+'''
+
+import json
+
+class JSONObject:
+    def __init__(self, d):
+        self.__dict__ = d
+
+data = json.loads(s, object_hook=JSONObject)
+
+print(json.dumps(data))
+print(json.dumps(data, indent=4))
+
+# 출력에서 키 정렬방법
+print(json.dumps(data, sort_keys=True))
+
+'''
+--------------------------------------------------------------------------------------
+- 인스턴스는 일반적으로 JSON으로 직렬화하지 않는다
+
+- 인스턴스를 직렬화하고 싶다면 인스턴스를 입력으로 받아 직렬화 가능한 딕셔너리를 반환하는 함수 제공
+--------------------------------------------------------------------------------------
+'''
+
+def serialize_instance(obj):
+    d = {'__classname__' : type(obj).__name__}
+    d.update(vars(obj))
+    return d
+
+'''
+--------------------------------------------------------------------------------------
+- 인스턴스를 돌려받는 코드
+--------------------------------------------------------------------------------------
+'''
+
+# 알려지지 않은 클래스에 이름을 매핑하는 딕셔너리
+classes = {'Point': 'Point'}
+
+def unserialize_object(d):
+    clsname = d.pop('__classname__', None)
+    if clsname:
+        cls = classes[clsname]
+
+        # __init__ 을 호출하지 않고 인스턴스 만들기
+        obj = cls.__new__(cls)
+        for key, value in d.items():
+            setattr(obj, key, value)
+            return obj
+
+    else:
+        return d
+
+
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+6.3 단순한 XML 데이터 파싱
+
+문제 : 단순한 XML 문서에서 데이터를 얻기
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- 단순한 XML 문서에서 데이터를 얻기 위해 xml.etree.ElementTree 모듈 사용
+
+- Planet Python 에서 RSS 피드를 받아 파싱을 해야한다고 가정
+--------------------------------------------------------------------------------------
+'''
+
+from urllib.request import urlopen
+from xml.etree.ElementTree import parse
+
+# RSS 피드를 다운로드하고 파싱
+u = urlopen('http://planet.python.org/rss20.xml')
+doc = parse(u)
+
+# 관심 있는 태그를 뽑아서 출력
+for item in doc.iterfind('channel/item'):
+    title = item.findtext('title')
+    date = item.findtext('pubDate')
+    link = item.findtext('link')
+
+    print(title)
+    print(date)
+    print(link)
+    print()
+
+'''
+--------------------------------------------------------------------------------------
+- xml.etree.ElementTree.parse() 함수가 XML 문서를 파싱하고 문서 객체로 만든다
+
+- 특정 XML 요소를 찾기 위해 find(), iterfind(), findtext() 함수 사용
+
+- 함수에 사용하는 인자는 channel/item, title 과 같이 특정 태그의 이름 사용
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- ElementTree 모듈이 나타내는 모든 요소는 파싱에 유용한 요소와 메소드를 약간 가지고 있다
+
+- tag 요소에는 태그의 이름, text 요소에는 담겨있는 텍스트가 포함되어 있고, 필요한 경우 get() 메소드로 요소를 얻을 수 있다
+--------------------------------------------------------------------------------------
+'''
+
+from urllib.request import urlopen
+from xml.etree.ElementTree import parse
+
+# RSS 피드를 다운로드하고 파싱
+u = urlopen('http://planet.python.org/rss20.xml')
+doc = parse(u)
+e = doc.find('channel/title')
+
+print(doc)
+print(e)
+print(e.tag)
+print(e.text)
+print(e.get('some_attribute'))
+
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+6.4 매우 큰 XML 파일 증분 파싱하기
+
+문제 : 매우 큰 XML 파일에서 최소의 메모리만 사용하여 데이터를 추출하기
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- 증분 데이터 처리에 직면할 때면 언제나 이터레이터와 제너레이터를 떠올려야 한다
+
+- 아주 큰 XML 파일을 증분적으로 처리하며 메모리 사용은 최소로 하는 함수 코드
+--------------------------------------------------------------------------------------
+'''
+
+from xml.etree.ElementTree import iterparse
+
+def parse_and_remove(filname, path):
+    path_parts = path.split('/')
+    doc = iterparse(filname, ('start', 'end'))
+
+    # 뿌리 요소 건너뛰기
+    next(doc)
+
+    tag_stack = []
+    elem_stack = []
+    for event, elem in doc:
+        if event == 'start':
+            tag_stack.append(elem.tag)
+            elem_stack.append(elem)
+        elif event == 'end':
+            if tag_stack == path_parts:
+                yield elem
+                elem_stack[-2].remove(elem)
+            try:
+                tag_stack.pop()
+                elem_stack.pop()
+            except IndexError:
+                pass
+
+'''
+--------------------------------------------------------------------------------------
+- ZIP 코드별로 순위를 매기는 스크립트 작성 코드
+--------------------------------------------------------------------------------------
+'''
+
+from xml.etree.ElementTree import parse
+from collections import Counter
+
+potholes_by_zip = Counter()
+doc = parse('potholes.xml')
+
+for pothole in doc.iterfind('row/row'):
+    potholes_by_zip[pothole.findtext('zip')] += 1
+
+for zipcode, num in potholes_by_zip.most_common():
+    print(zipcode, num)
+
+'''
+=> 위 스크립트는 XML 파일 전체를 읽어 메모리에 넣는다는 문제점 
+--------------------------------------------------------------------------------------
+'''
+
+'''
+--------------------------------------------------------------------------------------
+- 위의 코드 수정
+--------------------------------------------------------------------------------------
+'''
+
+from collections import Counter
+from xml.etree.ElementTree import iterparse
+
+def parse_and_remove(filname, path):
+    path_parts = path.split('/')
+    doc = iterparse(filname, ('start', 'end'))
+
+    # 뿌리 요소 건너뛰기
+    next(doc)
+
+    tag_stack = []
+    elem_stack = []
+    for event, elem in doc:
+        if event == 'start':
+            tag_stack.append(elem.tag)
+            elem_stack.append(elem)
+        elif event == 'end':
+            if tag_stack == path_parts:
+                yield elem
+                elem_stack[-2].remove(elem)
+            try:
+                tag_stack.pop()
+                elem_stack.pop()
+            except IndexError:
+                pass
+
+potholes_by_zip = Counter()
+data = parse_and_remove('potholes.xml', 'row/row')
+
+for pothole in data:
+    potholes_by_zip[pothole.findtext('zip')] += 1
+
+for zipcode, num in potholes_by_zip.most_common():
+    print(zipcode, num)
+
+'''
+--------------------------------------------------------------------------------------
+- ElementTree 모듈의 두 가지 필수 기능에 의존
+  첫번째는 iterparse() 메소드로 XML 문서를 증분 파싱할 수 있게 된다
+  이 메소드를 사용하기 위해서는 파일이름과 start, end, start-ns, end-ne 중 하나 이상을 포함한 이벤트 리스트를 넘겨주어야 한다
+  
+- iterparse() 가 생성한 이터레이터는 (event, elem)으로 구성된 튜플을 만드는데 event 는 리스팅된
+  이벤트 중 하나이고, elem은 결과로 나온 XML 요소
+  
+- start 이벤트는 요소가 처음 생성되었지만 다른 데이터를 만들지 않았을때 생성된다
+
+- end 이벤트는 요소를 마쳤을 때 생성된다
+
+- start-ns 와 end-ns 이벤트는 XML 네임스페이스 선언을 처리하기 위해 사용된다
+--------------------------------------------------------------------------------------
+'''
+
