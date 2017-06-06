@@ -142,10 +142,10 @@ class Game:
 
     def __init__(self, game_team_list):
         print('====================================================================================================')
-        print('== 선수단 구성')
+        print(game_team_list[0]+' 선수단 구성')
         print('====================================================================================================')
         print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        # print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
         print('====================================================================================================')
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
@@ -315,6 +315,28 @@ class Game:
                 return random_balls
 
 
+class Human(Game):
+    def __init__(self,game):
+        print('====================================================================================================')
+        print(game_team_list[1]+' 선수단 구성')
+        print('====================================================================================================')
+        # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
+        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        print('====================================================================================================')
+        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+        print('== 선수단 구성이 완료 되었습니다.\n')
+
+    def start_game(self):
+        while Game.INNING <= 1:
+            print('====================================================================================================')
+            print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
+            print('====================================================================================================\n')
+            self.attack()
+
+            if Game.CHANGE == 2:  # 이닝 교체
+                Game.INNING += 1
+                Game.CHANGE = 0
 
 
 if __name__ == '__main__':
@@ -326,6 +348,8 @@ if __name__ == '__main__':
         if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
             game = Game(game_team_list)
             game.start_game()
+            human = Human(game_team_list)
+            human.start_game()
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
@@ -334,9 +358,9 @@ if __name__ == '__main__':
 
 
 # import random
-#
+
 # class Game:
-#     def __init__(self):
+#     def __init__(self, game_team_list):
 #         print('====================================================================================================')
 #         print('== 선수단 구성')
 #         print('====================================================================================================')
@@ -352,9 +376,6 @@ if __name__ == '__main__':
 #                 return random_balls
 #
 #
-# class Human(Game):
-#     def __init__(self):
-#         super().__init__()
 #
 # if __name__ == '__main__':
 #     human = Human()
