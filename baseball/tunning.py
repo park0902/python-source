@@ -144,10 +144,10 @@ class Game:
 
     def __init__(self, game_team_list):
         print('====================================================================================================')
-        print('== 선수단 구성')
+        print(game_team_list[0]+' 선수단 구성')
         print('====================================================================================================')
         print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        # print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
         print('====================================================================================================')
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
@@ -405,30 +405,18 @@ class Weather:
                 print('정상적으로 9회 진행합니다.')
                 return int(1)
 
+class Human(Game):
+    def __init__(self,game_team_list):
+        print('====================================================================================================')
+        print(game_team_list[1]+' 선수단 구성')
+        print('====================================================================================================')
+        # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
+        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        print('====================================================================================================')
+        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+        print('== 선수단 구성이 완료 되었습니다.\n')
 
-# class Human(Game):
-#     def __init__(self,game_team_list):
-#         print('====================================================================================================')
-#         print(game_team_list[1]+' 선수단 구성')
-#         print('====================================================================================================')
-#         # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-#         print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
-#         print('====================================================================================================')
-#         # self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
-#         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
-#         print('== 선수단 구성이 완료 되었습니다.\n')
-#
-#     @property
-#     def awayteam(self):
-#         return self.__awayteam
-#
-#     Game.start_game()
-#     Game.attack()
-#     Game.advance_setting()
-#     Game.hit_judgment()
-#     Game.hit_number_check()
-#     Game.select_player()
-#     Game.throws_numbers()
 
 
 if __name__ == '__main__':
@@ -438,12 +426,12 @@ if __name__ == '__main__':
         game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
         print('====================================================================================================\n')
         if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
-            weather = Weather.weather_search(game_team_list)
-            game = Game(game_team_list[0])
+            weather = Weather.weather_search(game_team_list[0])
+            game = Game(game_team_list)
             game.start_game()
             game.start_game(weather)
-            # human = Human(game_team_list[1])
-            # human.start_game()
+            human = Human(game_team_list)
+            human.start_game()
 
             break
         else:
