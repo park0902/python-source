@@ -43,12 +43,21 @@ class Record:
     def avg(self, avg):
         self.__avg = avg
 
+    @property
+    def rbi(self):
+        return self.__rbi
+
+    @rbi.setter
+    def rbi(self, rbi):
+        self.__rbi = rbi
+
     # 타자 기록 관련 메서드
-    def batter_record(self, hit, homerun):
+    def batter_record(self, hit, homerun, rbi):
         self.hit += hit
         self.homerun += homerun
         self.atbat += 1
         self.avg = self.hit / self.atbat
+        self.rbi += rbi
 
 
 ###################################################################################################
@@ -82,8 +91,8 @@ class Player:
         return self.__team_name + ', ' + str(self.__number) + ', ' + self.__name
 
     # 선수 타율 관련 메서드
-    def hit_and_run(self, hit, homerun):
-        self.__record.batter_record(hit, homerun)
+    def hit_and_run(self, hit, homerun, rbi):
+        self.__record.batter_record(hit, homerun, rbi)
 
 
 ###################################################################################################
@@ -189,8 +198,8 @@ class Game:
                                         self.awayteam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(42, ' ')))
         print('==  {} | {}   =='.format(('('+str(Game.SCORE[0])+')').center(44, ' '), ('('+str(Game.SCORE[1])+')').center(44, ' ')))
         print('====================================================================================================')
-        print('== {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')), end='')
-        print('| {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')))
+        print('== {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '타점'.center(3, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '타점'.center(3, ' ')))
         print('====================================================================================================')
 
         hometeam_players = self.hometeam.player_list
@@ -201,10 +210,10 @@ class Game:
             hp_rec = hp.record
             ap = awayteam_players[i]
             ap_rec = ap.recor
-            print('== {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
-                                                  str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' ')), end='')
-            print(' {} | {} | {} | {} | {}  =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
-                                                    str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ')))
+            print('== {} | {} | {} | {} | {} | {}'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+                                                  str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '), str(hp_rec.rbi).center(5, ' ')), end='')
+            print(' {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+                                                    str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '), str(hp_rec.rbi).center(5, ' ')))
         print('====================================================================================================')
     # 공격 수행 메서드
     def attack(self):
@@ -405,17 +414,17 @@ class Weather:
                 print('정상적으로 9회 진행합니다.')
                 return int(1)
 
-class Human(Game):
-    def __init__(self,game_team_list):
-        print('====================================================================================================')
-        print(game_team_list[1]+' 선수단 구성')
-        print('====================================================================================================')
-        # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
-        print('====================================================================================================')
-        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
-        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
-        print('== 선수단 구성이 완료 되었습니다.\n')
+# class Human(Game):
+#     def __init__(self,game_team_list):
+#         print('====================================================================================================')
+#         print(game_team_list[1]+' 선수단 구성')
+#         print('====================================================================================================')
+#         # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
+#         print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+#         print('====================================================================================================')
+#         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+#         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+#         print('== 선수단 구성이 완료 되었습니다.\n')
 
 
 
@@ -430,8 +439,8 @@ if __name__ == '__main__':
             game = Game(game_team_list)
             game.start_game()
             game.start_game(weather)
-            human = Human(game_team_list)
-            human.start_game()
+            # human = Human(game_team_list)
+            # human.start_game()
 
             break
         else:
