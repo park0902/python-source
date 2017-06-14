@@ -9,7 +9,8 @@ class Record:
         self.__hit = 0  # 안타 수
         self.__homerun = 0  # 홈런 수
         self.__atbat = 0  # 타수
-        self.__avg = 0.6 # 타율
+        self.__avg = 0.0  # 타율
+        self.__rbi = 0    # 타점
 
     @property
     def hit(self):
@@ -43,12 +44,21 @@ class Record:
     def avg(self, avg):
         self.__avg = avg
 
+    @property
+    def rbi(self):
+        return self.__rbi
+
+    @rbi.setter
+    def rbi(self, rbi):
+        self.__rbi = rbi
+
     # 타자 기록 관련 메서드
     def batter_record(self, hit, homerun):
         self.hit += hit
         self.homerun += homerun
         self.atbat += 1
         self.avg = self.hit / self.atbat
+        # self.rbi += rbi
 
 
 ###################################################################################################
@@ -86,6 +96,7 @@ class Player:
         self.__record.batter_record(hit, homerun)
 
 
+
 ###################################################################################################
 ## 팀 관련 클래스
 ###################################################################################################
@@ -119,8 +130,6 @@ class Team:
 ## 게임 관련 클래스
 ###################################################################################################
 class Game:
-
-
     TEAM_LIST = {
         '한화': ({1: '정근우'}, {2: '이용규'}, {3: '송광민'}, {4: '최진행'}, {5: '하주석'}, {6: '장민석'}, {7: '로사리오'}, {8: '이양기'}, {9: '최재훈'}),
         '롯데': ({1: '나경민'}, {2: '손아섭'}, {3: '최준석'}, {4: '이대호'}, {5: '강민호'}, {6: '김문호'}, {7: '정훈'}, {8: '번즈'}, {9: '신본기'}),
@@ -147,7 +156,7 @@ class Game:
         print('== 선수단 구성')
         print('====================================================================================================')
         print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        # print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
         print('====================================================================================================')
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
@@ -163,16 +172,12 @@ class Game:
 
     # 게임 수행 메서드
     def start_game(self):
-        while Game.INNING <= weather:
+        while Game.INNING <= 1:
             print('====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
             print('====================================================================================================\n')
             self.attack()
 
-            if abs(Game.SCORE[0] - Game.SCORE[1]) > 1:
-                Game.INNING = 10  # 이러면 종료가될까??
-                print('CalledGame으로 {} 승리!!'.format(self.hometeam.team_name if Game.SCORE[0] - Game.SCORE[1]>0  else self.awayteam.team_name))
-                return True
             if Game.CHANGE == 2:  # 이닝 교체
                 Game.INNING += 1
                 Game.CHANGE = 0
@@ -189,8 +194,8 @@ class Game:
                                         self.awayteam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(42, ' ')))
         print('==  {} | {}   =='.format(('('+str(Game.SCORE[0])+')').center(44, ' '), ('('+str(Game.SCORE[1])+')').center(44, ' ')))
         print('====================================================================================================')
-        print('== {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')), end='')
-        print('| {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')))
+        print('== {} | {} | {} | {} | {} | {}'.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '타점'.center(3, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '타점'.center(3, ' ')))
         print('====================================================================================================')
 
         hometeam_players = self.hometeam.player_list
@@ -200,12 +205,14 @@ class Game:
             hp = hometeam_players[i]
             hp_rec = hp.record
             ap = awayteam_players[i]
-            ap_rec = ap.recor
-            print('== {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
-                                                  str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' ')), end='')
-            print(' {} | {} | {} | {} | {}  =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
-                                                    str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ')))
+            ap_rec = ap.record
+
+            print('== {} | {} | {} | {} | {} | {}'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '), str(hp_rec.rbi).center(5, ' ')), end='')
+            print(' {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
         print('====================================================================================================')
+
     # 공격 수행 메서드
     def attack(self):
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
@@ -219,7 +226,6 @@ class Game:
 
             while True:
                 random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 4개 생성
-                print(self.ran_num_1())
                 print('== [전광판] =========================================================================================')
                 print('==   {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
                 print('==  {}  {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
@@ -227,18 +233,10 @@ class Game:
                 print('====================================================================================================')
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}'.format(player.number, player.name, player.record.avg))
 
-
                 try:
-                    ddd = self.ran_num_1()
-                    if ddd == 20:
-                        hit_numbers = set(int(hit_number) for hit_number in input('== 숫자를 입력하세요(1~20) : ').split(' '))  # 유저가 직접 숫자 4개 입력
-                        if self.hit_number_check(hit_numbers) is False:
-                            raise Exception()
-                    else:
-                        hit_numbers = set(int(hit_number) for hit_number in input('== 숫자를 입력하세요(1~40) : ').split(' '))  # 유저가 직접 숫자 4개 입력
-                        if self.hit_number_check(hit_numbers) is False:
-                            raise Exception()
-
+                    hit_numbers = set(int(hit_number) for hit_number in input('== 숫자를 입력하세요(1~40) : ').split(' '))  # 유저가 직접 숫자 4개 입력
+                    if self.hit_number_check(hit_numbers) is False:
+                        raise Exception()
                 except Exception:
                     print('== ▣ 잘못된 숫자가 입력되었습니다.')
                     print('====================================================================================================')
@@ -248,34 +246,22 @@ class Game:
                 print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
 
                 hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
-                ran_num = random.choice([1,1,1,1,1,1,1,2,2,2,2,2,2])
-                print(ran_num)
-                if ran_num == 1 or hit_cnt == 0:
-                    if hit_cnt == 0:  # strike !!!
-                        Game.STRIKE_CNT += 1
-                        print('== ▣ 스트라이크!!!\n')
-                        if Game.STRIKE_CNT == 3:
-                            print('== ▣ 삼진 아웃!!!\n')
-                            Game.STRIKE_CNT = 0
-                            Game.OUT_CNT += 1
-                            break
-                    else:
+                if hit_cnt == 0:  # strike !!!
+                    Game.STRIKE_CNT += 1
+                    print('== ▣ 스트라이크!!!\n')
+                    if Game.STRIKE_CNT == 3:
+                        print('== ▣ 삼진 아웃!!!\n')
                         Game.STRIKE_CNT = 0
-                        if hit_cnt != 4:
-                            print('== ▣ {}루타!!!\n'.format(hit_cnt))
-                        else:
-                            print('== ▣ 홈런!!!\n')
-                        self.advance_setting(hit_cnt)
+                        Game.OUT_CNT += 1
                         break
-                elif ran_num == 2 and hit_cnt >= 1:
-                    if Game.STRIKE_CNT == 0 or Game.STRIKE_CNT == 1:
-                        Game.STRIKE_CNT += 1
-                        print('== ▣ 파울!!!\n')
-                    elif Game.STRIKE_CNT == 2:
-                        Game.STRIKE_CNT  = 2
-                        print('== ▣ 파울!!!\n')
-
-
+                else:
+                    Game.STRIKE_CNT = 0
+                    if hit_cnt != 4:
+                        print('== ▣ {}루타!!!\n'.format(hit_cnt))
+                    else:
+                        print('== ▣ 홈런!!!\n')
+                    self.advance_setting(hit_cnt)
+                    break
 
             player.hit_and_run(1 if hit_cnt > 0 else 0, 1 if hit_cnt == 4 else 0)
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -318,117 +304,41 @@ class Game:
 
     # 선수가 입력한 숫자 확인
     def hit_number_check(self, hit_numbers):
-        ddd = self.ran_num_1()
-        if ddd == 20:
-            if len(hit_numbers) == 4:
-                for hit_number in hit_numbers:
-                    if hit_number <= 0 or hit_number > 20:
-                        return False
-                return True
-            return False
-        else:
-            if len(hit_numbers) == 4:
-                for hit_number in hit_numbers:
-                    if hit_number <= 0 or hit_number > 40:
-                        return False
-                return True
-            return False
+        if len(hit_numbers) == 4:
+            for hit_number in hit_numbers:
+                if hit_number <= 0 or hit_number > 40:
+                    return False
+            return True
+        return False
 
     # 선수 선택
     def select_player(self, number, player_list):
         for player in player_list:
             if number == player.number:
                 return player
-    def ran_num_1(self):
-        curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
-        player_list = curr_team.player_list
-        player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
-        avg = player.record.avg
-        if avg >= 0.5:
-            return  int(20)
-        elif avg < 0.5:
-            return int(40)
 
     # 랜덤으로 숫자 생성(1~20)
     def throws_numbers(self):
         random_balls = set()
-        ab = self.ran_num_1()
         while True:
-            random_balls.add(random.randint(1,5))  # 1 ~ 20 중에 랜덤 수를 출력
+            random_balls.add(random.randint(1, 40))  # 1 ~ 20 중에 랜덤 수를 출력
             if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                 return random_balls
 
 
-class Weather:
-    def weather_search(team1):
-        import urllib.request
-        from  bs4 import BeautifulSoup
-        import re
+class Human(Game):
+    def __init__(self):
+        super().__init__()
+        print('====================================================================================================')
+        print('== 선수단 구성')
+        print('====================================================================================================')
+        # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
+        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        print('====================================================================================================')
+        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+        print('== 선수단 구성이 완료 되었습니다.\n')
 
-        abc = team1
-        if abc == '넥센':
-            print('돔구장이라 상관없이 9회 진행합니다.')
-            return 1
-
-        else:
-            team = {'두산':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
-                    'LG':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
-                    'SK':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%AC%B8%ED%95%99%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    '삼성':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%97%B0%ED%98%B8%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    '한화':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%B6%80%EC%82%AC%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    'KIA':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%84%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    '롯데':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%82%AC%EC%A7%81%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    'KT':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%A1%B0%EC%9B%90%EB%8F%99+%EB%82%A0%EC%94%A8',
-                    'NC':'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%96%91%EB%8D%95%EB%8F%99+%EB%82%A0%EC%94%A8'}
-            a = team[abc]
-            # binary = 'D:\chromedriver/chromedriver.exe'
-            # browser = webdriver.Chrome(binary)
-            list_url= a
-            url = urllib.request.Request(list_url)
-            res = urllib.request.urlopen(url).read().decode('utf-8')
-            soup = BeautifulSoup(res, 'html.parser')
-            b = soup.find('div',class_='contents03')
-            c = b.find_all('div',class_='w_now2')[0]
-            d = c.find('img')
-            print('===============================================================================================')
-            e = d.get_text().split()[2]
-            f = re.sub('[1-9,℃]','',e)
-            print(abc,'구장 날씨는',e)
-            weather = f[1:]
-
-            if weather == '맑음':
-                print(weather)
-                print('날씨관계로 6회까지만 진행합니다.')
-                return int(1)
-            else:
-                print(weather)
-                print('정상적으로 9회 진행합니다.')
-                return int(1)
-
-
-# class Human(Game):
-#     def __init__(self,game_team_list):
-#         print('====================================================================================================')
-#         print(game_team_list[1]+' 선수단 구성')
-#         print('====================================================================================================')
-#         # print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-#         print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
-#         print('====================================================================================================')
-#         # self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
-#         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
-#         print('== 선수단 구성이 완료 되었습니다.\n')
-#
-#     @property
-#     def awayteam(self):
-#         return self.__awayteam
-#
-#     Game.start_game()
-#     Game.attack()
-#     Game.advance_setting()
-#     Game.hit_judgment()
-#     Game.hit_number_check()
-#     Game.select_player()
-#     Game.throws_numbers()
 
 
 if __name__ == '__main__':
@@ -438,13 +348,10 @@ if __name__ == '__main__':
         game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
         print('====================================================================================================\n')
         if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
-            weather = Weather.weather_search(game_team_list)
-            game = Game(game_team_list[0])
+            game = Game(game_team_list)
             game.start_game()
-            game.start_game(weather)
-            # human = Human(game_team_list[1])
+            # human = Human(game_team_list)
             # human.start_game()
-
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
