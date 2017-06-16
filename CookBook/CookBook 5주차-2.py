@@ -839,4 +839,3 @@ def init_fromlocal(self):
     class Stock:
         def __init__(self, name, shares, price):
             init_fromlocal(self)
-            
