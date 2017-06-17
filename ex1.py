@@ -208,3 +208,8 @@ plt.xlabel('August')
 plt.ylabel('Wind speed(km/h)')
 
 plt.show()
+
+
+a = ['a', 'b', 'c']
+
+a.count(1)
