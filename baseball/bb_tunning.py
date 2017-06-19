@@ -291,7 +291,7 @@ class Game:
 
         if hit_cnt == 4:  # 홈런인 경우
             Game.SCORE[Game.CHANGE] += Game.ADVANCE.count(1)
-            player.rbi(Game.ADVANCE.count(1))
+            # player.rbi(Game.ADVANCE.count(1))
             Game.ADVANCE = [0, 0, 0]
         else:
             for i in range(len(Game.ADVANCE), 0, -1):
