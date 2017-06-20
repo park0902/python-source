@@ -1,6 +1,6 @@
 import random
 import re
-
+import os
 
 ###################################################################################################
 ## 기록 관련 클래스
@@ -158,7 +158,7 @@ class Game:
         {1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
 
-    INNING = 8  # 1 이닝부터 시작
+    INNING = 9  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
     OUT_CNT = 0  # 아웃 개수
@@ -205,6 +205,24 @@ class Game:
         print('== 게임 종료!!!')
         print('====================================================================================================\n')
         self.show_record()
+        f = open(self.get_save_path(), 'w')
+        f.write(str(game_team_list[0]) + ', ')
+        # f.write(str(self.show_record().hp.record) + ', ')
+        f.write(str(Game.SCORE[0]) + ', ')
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
+        f.close()
+        return self.get_save_path()
+
+
+
+    def get_save_path(self):
+        self.save_path = input("Enter the file name and file location : ")
+        self.save_path = self.save_path.replace("\\", "/")
+        if not os.path.isdir(os.path.split(self.save_path)[0]):
+            os.mkdir(os.path.split(self.save_path)[0])  # 폴더가 없으면 만드는 작업
+        return self.save_path
+
 
     # 팀별 선수 기록 출력
     def show_record(self):
@@ -244,6 +262,9 @@ class Game:
                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),
                                                        str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
         print('====================================================================================================')
+
+
+
 
     # 공격 수행 메서드
     def attack(self):
@@ -338,6 +359,16 @@ class Game:
             print('CalledGame으로 {}'.format(self.hometeam.team_name if Game.SCORE[0] - Game.SCORE[1] > 0  else self.awayteam.team_name),abs(Game.SCORE[0] - Game.SCORE[1]),'점차로 승리하셨습니다')
             Game.INNING = 10
             self.show_record()
+
+            f = open(self.get_save_path(), 'w')
+            f.write(str(game_team_list[0]) + ', ')
+            # f.write(str(self.show_record().hp.record) + ', ')
+            f.write(str(Game.SCORE[0]) + ', ')
+            f.write(str(game_team_list[1]) + ', ')
+            f.write(str(Game.SCORE[1]) + '\n')
+            f.close()
+            return self.get_save_path()
+
 
     # 진루 및 득점 설정하는 메서드
     def advance_setting(self, hit_cnt):
