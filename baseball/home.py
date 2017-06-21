@@ -1,6 +1,6 @@
 import random
 import re
-
+import os
 
 ###################################################################################################
 ## 기록 관련 클래스
@@ -185,10 +185,20 @@ class Game:
     def awayteam(self):
         return self.__awayteam
 
-    # 게임 수행 메서드
-    def start_game(self,weather):
 
-        while Game.INNING <= weather:
+    def get_save_path(self):
+        self.save_path = input("Enter the file name and file location : ")
+        self.save_path = self.save_path.replace("\\", "/")
+        if not os.path.isdir(os.path.split(self.save_path)[0]):
+            os.mkdir(os.path.split(self.save_path)[0])  # 폴더가 없으면 만드는 작업
+        return self.save_path
+
+
+
+    # 게임 수행 메서드
+    def start_game(self):
+
+        while Game.INNING <= 1:
             print(
                 '====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING,
@@ -205,6 +215,8 @@ class Game:
         print('== 게임 종료!!!')
         print('====================================================================================================\n')
         self.show_record()
+
+
 
     # 팀별 선수 기록 출력
     def show_record(self):
@@ -244,6 +256,19 @@ class Game:
                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),
                                                        str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
         print('====================================================================================================')
+
+
+
+    def load_csv(self):
+        f = open(self.get_save_path(), 'w')
+        f.write(str(game_team_list[0]) + ', ')
+        f.write(str(Game.show_record) + ', ')
+        f.write(str(Game.SCORE[0]) + ', ')
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
+        f.close()
+        self.get_save_path()
+
 
     # 공격 수행 메서드
     def attack(self):
@@ -319,7 +344,7 @@ class Game:
                             print('== ▣ 파울!!!\n')
 
                 player.hit_and_run(1 if hit_cnt > 0 else 0, 1 if hit_cnt == 4 else 0)
-                if Game.BATTER_NUMBER[Game.CHANGE] == 9:
+                if Game.BATTER_NUMBER[Game.CHANGE] == 4:
                     Game.BATTER_NUMBER[Game.CHANGE] = 1
                 else:
                     Game.BATTER_NUMBER[Game.CHANGE] += 1
@@ -338,6 +363,16 @@ class Game:
             print('CalledGame으로 {}'.format(self.hometeam.team_name if Game.SCORE[0] - Game.SCORE[1] > 0  else self.awayteam.team_name),abs(Game.SCORE[0] - Game.SCORE[1]),'점차로 승리하셨습니다')
             Game.INNING = 10
             self.show_record()
+
+            # f = open(self.get_save_path(), 'w')
+            # f.write(str(game_team_list[0]) + ', ')
+            # # f.write(str(self.show_record().hp.record) + ', ')
+            # f.write(str(Game.SCORE[0]) + ', ')
+            # f.write(str(game_team_list[1]) + ', ')
+            # f.write(str(Game.SCORE[1]) + '\n')
+            # f.close()
+            # self.get_save_path()
+
 
     # 진루 및 득점 설정하는 메서드
     def advance_setting(self, hit_cnt):
@@ -413,52 +448,52 @@ class Game:
                 return random_balls
 
 
-class Weather:
-    def weather_search(team_for_loc):              # team1은 team_for_loc, loc은 location의 약자
-        import urllib.request
-        from  bs4 import BeautifulSoup
-        import re
-
-        team_stadium = team_for_loc                 # abc는 team_stadium
-        if team_stadium == '넥센':
-            print('돔구장이라 상관없이 9회 진행합니다.')
-            return 1
-
-        else:
-            team = {
-                '두산': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
-                'LG': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
-                'SK': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%AC%B8%ED%95%99%EB%8F%99+%EB%82%A0%EC%94%A8',
-                '삼성': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%97%B0%ED%98%B8%EB%8F%99+%EB%82%A0%EC%94%A8',
-                '한화': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%B6%80%EC%82%AC%EB%8F%99+%EB%82%A0%EC%94%A8',
-                'KIA': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%84%EB%8F%99+%EB%82%A0%EC%94%A8',
-                '롯데': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%82%AC%EC%A7%81%EB%8F%99+%EB%82%A0%EC%94%A8',
-                'KT': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%A1%B0%EC%9B%90%EB%8F%99+%EB%82%A0%EC%94%A8',
-                'NC': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%96%91%EB%8D%95%EB%8F%99+%EB%82%A0%EC%94%A8'}
-            team_for_weather = team[team_stadium]                                     # a는 team_for_weather
-            # binary = 'D:\chromedriver/chromedriver.exe'
-            # browser = webdriver.Chrome(binary)
-            list_url = team_for_weather
-            url = urllib.request.Request(list_url)
-            res = urllib.request.urlopen(url).read().decode('utf-8')
-            soup = BeautifulSoup(res, 'html.parser')
-            weather_contents = soup.find('div', class_='contents03')               # b는 weather_contents
-            now_weather = weather_contents.find_all('div', class_='w_now2')[0]      # c는 now_weather
-            img_weather = now_weather.find('img')                                    # d는 img_weather
-            print('===============================================================================================')
-            weather_get_text = img_weather.get_text().split()[2]                      # e는 weather_get_text
-            celcius = re.sub('[1-9,℃]', '', weather_get_text)                             # f는 celcius
-            print(team_stadium, '구장 날씨는', weather_get_text)
-            weather = celcius[1:]
-
-            if weather == '맑음':
-                print(weather)
-                print('날씨관계로 6회까지만 진행합니다.')
-                return int(6)
-            else:
-                print(weather)
-                print('정상적으로 9회 진행합니다.')
-                return int(9)
+# class Weather:
+#     def weather_search(team_for_loc):              # team1은 team_for_loc, loc은 location의 약자
+#         import urllib.request
+#         from  bs4 import BeautifulSoup
+#         import re
+#
+#         team_stadium = team_for_loc                 # abc는 team_stadium
+#         if team_stadium == '넥센':
+#             print('돔구장이라 상관없이 9회 진행합니다.')
+#             return 1
+#
+#         else:
+#             team = {
+#                 '두산': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
+#                 'LG': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%A0%EC%8B%A4+%EB%82%A0%EC%94%A8',
+#                 'SK': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%AC%B8%ED%95%99%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 '삼성': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%97%B0%ED%98%B8%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 '한화': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EB%B6%80%EC%82%AC%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 'KIA': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%9E%84%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 '롯데': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%82%AC%EC%A7%81%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 'KT': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%A1%B0%EC%9B%90%EB%8F%99+%EB%82%A0%EC%94%A8',
+#                 'NC': 'https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%96%91%EB%8D%95%EB%8F%99+%EB%82%A0%EC%94%A8'}
+#             team_for_weather = team[team_stadium]                                     # a는 team_for_weather
+#             # binary = 'D:\chromedriver/chromedriver.exe'
+#             # browser = webdriver.Chrome(binary)
+#             list_url = team_for_weather
+#             url = urllib.request.Request(list_url)
+#             res = urllib.request.urlopen(url).read().decode('utf-8')
+#             soup = BeautifulSoup(res, 'html.parser')
+#             weather_contents = soup.find('div', class_='contents03')               # b는 weather_contents
+#             now_weather = weather_contents.find_all('div', class_='w_now2')[0]      # c는 now_weather
+#             img_weather = now_weather.find('img')                                    # d는 img_weather
+#             print('===============================================================================================')
+#             weather_get_text = img_weather.get_text().split()[2]                      # e는 weather_get_text
+#             celcius = re.sub('[1-9,℃]', '', weather_get_text)                             # f는 celcius
+#             print(team_stadium, '구장 날씨는', weather_get_text)
+#             weather = celcius[1:]
+#
+#             if weather == '맑음':
+#                 print(weather)
+#                 print('날씨관계로 6회까지만 진행합니다.')
+#                 return int(6)
+#             else:
+#                 print(weather)
+#                 print('정상적으로 9회 진행합니다.')
+#                 return int(9)
 
 
 if __name__ == '__main__':
@@ -470,10 +505,10 @@ if __name__ == '__main__':
         game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
         print('===========================================================================================================\n')
         if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
-            weather = Weather.weather_search(game_team_list[0])
+            # weather = Weather.weather_search(game_team_list[0])
             game = Game(game_team_list)
-            game.start_game(weather)
-
+            game.start_game()
+            game.load_csv()
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')

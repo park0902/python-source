@@ -158,7 +158,7 @@ class Game:
         {1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
 
-    INNING = 9  # 1 이닝부터 시작
+    INNING = 0  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
     OUT_CNT = 0  # 아웃 개수
@@ -185,6 +185,16 @@ class Game:
     def awayteam(self):
         return self.__awayteam
 
+
+    def get_save_path(self):
+        self.save_path = input("Enter the file name and file location : ")
+        self.save_path = self.save_path.replace("\\", "/")
+        if not os.path.isdir(os.path.split(self.save_path)[0]):
+            os.mkdir(os.path.split(self.save_path)[0])  # 폴더가 없으면 만드는 작업
+        return self.save_path
+
+
+
     # 게임 수행 메서드
     def start_game(self,weather):
 
@@ -205,23 +215,7 @@ class Game:
         print('== 게임 종료!!!')
         print('====================================================================================================\n')
         self.show_record()
-        f = open(self.get_save_path(), 'w')
-        f.write(str(game_team_list[0]) + ', ')
-        # f.write(str(self.show_record().hp.record) + ', ')
-        f.write(str(Game.SCORE[0]) + ', ')
-        f.write(str(game_team_list[1]) + ', ')
-        f.write(str(Game.SCORE[1]) + '\n')
-        f.close()
-        return self.get_save_path()
 
-
-
-    def get_save_path(self):
-        self.save_path = input("Enter the file name and file location : ")
-        self.save_path = self.save_path.replace("\\", "/")
-        if not os.path.isdir(os.path.split(self.save_path)[0]):
-            os.mkdir(os.path.split(self.save_path)[0])  # 폴더가 없으면 만드는 작업
-        return self.save_path
 
 
     # 팀별 선수 기록 출력
@@ -264,6 +258,16 @@ class Game:
         print('====================================================================================================')
 
 
+
+    def load_csv(self):
+        f = open(self.get_save_path(), 'w')
+        f.write(str(game_team_list[0]) + ', ')
+        f.write(str(Game.show_record) + ', ')
+        f.write(str(Game.SCORE[0]) + ', ')
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
+        f.close()
+        self.get_save_path()
 
 
     # 공격 수행 메서드
@@ -340,7 +344,7 @@ class Game:
                             print('== ▣ 파울!!!\n')
 
                 player.hit_and_run(1 if hit_cnt > 0 else 0, 1 if hit_cnt == 4 else 0)
-                if Game.BATTER_NUMBER[Game.CHANGE] == 9:
+                if Game.BATTER_NUMBER[Game.CHANGE] == 4:
                     Game.BATTER_NUMBER[Game.CHANGE] = 1
                 else:
                     Game.BATTER_NUMBER[Game.CHANGE] += 1
@@ -360,14 +364,14 @@ class Game:
             Game.INNING = 10
             self.show_record()
 
-            f = open(self.get_save_path(), 'w')
-            f.write(str(game_team_list[0]) + ', ')
-            # f.write(str(self.show_record().hp.record) + ', ')
-            f.write(str(Game.SCORE[0]) + ', ')
-            f.write(str(game_team_list[1]) + ', ')
-            f.write(str(Game.SCORE[1]) + '\n')
-            f.close()
-            return self.get_save_path()
+            # f = open(self.get_save_path(), 'w')
+            # f.write(str(game_team_list[0]) + ', ')
+            # # f.write(str(self.show_record().hp.record) + ', ')
+            # f.write(str(Game.SCORE[0]) + ', ')
+            # f.write(str(game_team_list[1]) + ', ')
+            # f.write(str(Game.SCORE[1]) + '\n')
+            # f.close()
+            # self.get_save_path()
 
 
     # 진루 및 득점 설정하는 메서드
@@ -504,7 +508,7 @@ if __name__ == '__main__':
             weather = Weather.weather_search(game_team_list[0])
             game = Game(game_team_list)
             game.start_game(weather)
-
+            game.load_csv()
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
