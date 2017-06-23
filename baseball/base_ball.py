@@ -2,6 +2,7 @@ import random
 import re
 import os
 
+
 ###################################################################################################
 ## 기록 관련 클래스
 ###################################################################################################
@@ -194,7 +195,6 @@ class Game:
         return self.save_path
 
 
-
     # 게임 수행 메서드
     def start_game(self,weather):
 
@@ -216,11 +216,9 @@ class Game:
         print('====================================================================================================\n')
         self.show_record()
 
-
-
     # 팀별 선수 기록 출력
     def show_record(self):
-
+        f = open(self.get_save_path(), 'a')
 
         print('====================================================================================================')
         print('==  {} | {}   =='.format(self.hometeam.team_name.center(44, ' ') if re.search('[a-zA-Z]+',
@@ -241,6 +239,20 @@ class Game:
         hometeam_players = self.hometeam.player_list
         awayteam_players = self.awayteam.player_list
 
+        f.write(str(game_team_list[0]) + ', ')
+        f.write(str(Game.SCORE[0]) + ', ')
+        f.write(', ')
+        f.write(', ')
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
+
+        f.write('선수이름' + ', ')
+        f.write('타율' + ', ')
+        f.write('타석' + ', ')
+        f.write('안타' + ', ')
+        f.write('홈런' + ', ')
+        f.write('타점' + '\n')
+
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
@@ -255,26 +267,35 @@ class Game:
                                                        str(ap_rec.avg).center(7, ' '),
                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),
                                                        str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
+
+            f.write(str(hp.name) + ', ')
+            f.write(str(hp_rec.avg) + ', ')
+            f.write(str(hp_rec.atbat) + ', ')
+            f.write(str(hp_rec.hit) + ', ')
+            f.write(str(hp_rec.homerun) + ', ')
+            f.write(str(hp_rec.rbi) + '\n')
+
+        for j in range(9):
+            ap = awayteam_players[j]
+            ap_rec = ap.record
+            f.write(str(ap.name) + ', ')
+            f.write(str(ap_rec.avg) + ', ')
+            f.write(str(ap_rec.atbat) + ', ')
+            f.write(str(ap_rec.hit) + ', ')
+            f.write(str(ap_rec.homerun) + ', ')
+            f.write(str(ap_rec.rbi) + '\n')
+
+
         print('====================================================================================================')
-
-
-
-    def load_csv(self):
-        f = open(self.get_save_path(), 'w')
-        f.write(str(game_team_list[0]) + ', ')
-        f.write(str(Game.show_record) + ', ')
-        f.write(str(Game.SCORE[0]) + ', ')
-        f.write(str(game_team_list[1]) + ', ')
-        f.write(str(Game.SCORE[1]) + '\n')
         f.close()
-        self.get_save_path()
+
 
 
     # 공격 수행 메서드
     def attack(self):
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
-        if abs(Game.SCORE[0] - Game.SCORE[1]) < 10:
+        if abs(Game.SCORE[0] - Game.SCORE[1]) < 5:
             if Game.OUT_CNT < 3:
                 player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
                 print(
@@ -344,7 +365,7 @@ class Game:
                             print('== ▣ 파울!!!\n')
 
                 player.hit_and_run(1 if hit_cnt > 0 else 0, 1 if hit_cnt == 4 else 0)
-                if Game.BATTER_NUMBER[Game.CHANGE] == 4:
+                if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                     Game.BATTER_NUMBER[Game.CHANGE] = 1
                 else:
                     Game.BATTER_NUMBER[Game.CHANGE] += 1
@@ -359,20 +380,11 @@ class Game:
                 print('== 공수교대 하겠습니다.')
                 print(
                 '====================================================================================================\n')
-        elif abs(Game.SCORE[0] - Game.SCORE[1]) > 9:
+        elif abs(Game.SCORE[0] - Game.SCORE[1]) > 4:
             print('CalledGame으로 {}'.format(self.hometeam.team_name if Game.SCORE[0] - Game.SCORE[1] > 0  else self.awayteam.team_name),abs(Game.SCORE[0] - Game.SCORE[1]),'점차로 승리하셨습니다')
             Game.INNING = 10
             self.show_record()
-
-            # f = open(self.get_save_path(), 'w')
-            # f.write(str(game_team_list[0]) + ', ')
-            # # f.write(str(self.show_record().hp.record) + ', ')
-            # f.write(str(Game.SCORE[0]) + ', ')
-            # f.write(str(game_team_list[1]) + ', ')
-            # f.write(str(Game.SCORE[1]) + '\n')
-            # f.close()
-            # self.get_save_path()
-
+            quit()
 
     # 진루 및 득점 설정하는 메서드
     def advance_setting(self, hit_cnt):
@@ -508,7 +520,7 @@ if __name__ == '__main__':
             weather = Weather.weather_search(game_team_list[0])
             game = Game(game_team_list)
             game.start_game(weather)
-            game.load_csv()
+
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
