@@ -1,6 +1,7 @@
 import random
 import re
 import os
+import ctypes
 
 
 ###################################################################################################
@@ -159,7 +160,7 @@ class Game:
         {1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
 
-    INNING = 1  # 1 이닝부터 시작
+    INNING = 0  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
     OUT_CNT = 0  # 아웃 개수
@@ -219,7 +220,7 @@ class Game:
     # 팀별 선수 기록 출력
     def show_record(self):
         f = open(self.get_save_path(), 'a')
-
+        labels = ['선수이름', '타율', '타석', '안타', '홈런', '타점']
         print('====================================================================================================')
         print('==  {} | {}   =='.format(self.hometeam.team_name.center(44, ' ') if re.search('[a-zA-Z]+',
                                                                                              self.hometeam.team_name) is not None else self.hometeam.team_name.center(
@@ -240,24 +241,18 @@ class Game:
         awayteam_players = self.awayteam.player_list
 
         f.write(str(game_team_list[0]) + ', ')
-        f.write(str(Game.SCORE[0]) + ', ')
-        f.write(', ')
-        f.write(', ')
-        f.write(str(game_team_list[1]) + ', ')
-        f.write(str(Game.SCORE[1]) + '\n')
+        f.write(str(Game.SCORE[0]) + '\n')
 
-        f.write('선수이름' + ', ')
-        f.write('타율' + ', ')
-        f.write('타석' + ', ')
-        f.write('안타' + ', ')
-        f.write('홈런' + ', ')
-        f.write('타점' + '\n')
+        for label in labels:
+            f.write(label + ', ')
+        f.write('\n')
 
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
             ap = awayteam_players[i]
             ap_rec = ap.record
+            hp_labels = [hp.name, hp_rec.avg, hp_rec.atbat, hp_rec.hit, hp_rec.homerun, hp_rec.rbi]
 
             print('== {} | {} | {} | {} | {} | {} '.format(hp.name.center(6 + (4 - len(hp.name)), ' '),
                                                        str(hp_rec.avg).center(7, ' '),
@@ -265,27 +260,25 @@ class Game:
                                                        str(hp_rec.homerun).center(5, ' '), str(hp_rec.rbi).center(5, ' ')), end='')
             print(' {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6 + (4 - len(ap.name)), ' '),
                                                        str(ap_rec.avg).center(7, ' '),
-                                                       str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),
-                                                       str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
+                                                       str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),                                                    str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
+            for hp_label in hp_labels:
+                f.write(str(hp_label) + ', ')
+            f.write('\n')
 
-            f.write(str(hp.name) + ', ')
-            f.write(str(hp_rec.avg) + ', ')
-            f.write(str(hp_rec.atbat) + ', ')
-            f.write(str(hp_rec.hit) + ', ')
-            f.write(str(hp_rec.homerun) + ', ')
-            f.write(str(hp_rec.rbi) + '\n')
+
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
 
         for j in range(9):
             ap = awayteam_players[j]
             ap_rec = ap.record
-            f.write(str(ap.name) + ', ')
-            f.write(str(ap_rec.avg) + ', ')
-            f.write(str(ap_rec.atbat) + ', ')
-            f.write(str(ap_rec.hit) + ', ')
-            f.write(str(ap_rec.homerun) + ', ')
-            f.write(str(ap_rec.rbi) + '\n')
+            ap_labels = [ap.name, ap_rec.avg, ap_rec.atbat, ap_rec.hit, ap_rec.homerun, ap_rec.rbi]
 
+            for ap_label in ap_labels:
+                f.write(str(ap_label) + ', ')
+            f.write('\n')
 
+        f.write('\n')
         print('====================================================================================================')
         f.close()
 
@@ -305,7 +298,7 @@ class Game:
                     '====================================================================================================\n')
                 while True:
                     random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 4개 생성
-                    print(self.number_randomly())                     # ran_num_1은 number_randomly
+                    print(self.number_randomly(),'타율적용한 랜덤 숫자 범위')                     # ran_num_1은 number_randomly
                     print(
                         '== [전광판] =========================================================================================')
                     print('==   {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
@@ -315,6 +308,7 @@ class Game:
                     print(
                         '====================================================================================================')
                     print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 타점 : {}'.format(player.number, player.name, player.record.avg, player.record.rbi))
+
                     try:
                         check_num = self.number_randomly()
                         if check_num == 20:
@@ -328,7 +322,7 @@ class Game:
                             if self.hit_number_check(hit_numbers) is False:
                                 raise Exception()
                     except Exception:
-                        print('== ▣ 잘못된 숫자가 입력되었습니다.')
+                        ctypes.windll.user32.MessageBoxW(None, '숫자를 잘못 입력하셨습니다.', "Error", 0)
                         print(
                             '====================================================================================================')
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
@@ -337,9 +331,9 @@ class Game:
                         '====================================================================================================')
                     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
                     hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
-                    num_random_choice = random.choice([1, 1, 1, 1, 1, 1, 1, 1,1,1,1,1,1,1,1,1,1,1,2])          # ran_num은 num_random_choice
-                    print(num_random_choice)
-                    if num_random_choice == 1 or hit_cnt == 0:
+                    num_random_choice = random.randrange(1,21)          # ran_num은 num_random_choice
+                    print(num_random_choice,'파울을 결정하는 random숫자 1~19까지는 파울이 아님')
+                    if num_random_choice < 20 or hit_cnt == 0:
                         if hit_cnt == 0:  # strike !!!
                             Game.STRIKE_CNT += 1
                             print('== ▣ 스트라이크!!!\n')
@@ -356,7 +350,7 @@ class Game:
                                 print('== ▣ {} {} 점 홈런!!!\n'.format(player.name, Game.ADVANCE.count(1)+1))
                             self.advance_setting(hit_cnt)
                             break
-                    elif num_random_choice == 2 and hit_cnt >= 1:
+                    elif num_random_choice == 20 and hit_cnt >= 1:
                         if Game.STRIKE_CNT == 0 or Game.STRIKE_CNT == 1:
                             Game.STRIKE_CNT += 1
                             print('== ▣ 파울!!!\n')
@@ -495,15 +489,14 @@ class Weather:
             print('===============================================================================================')
             weather_get_text = img_weather.get_text().split()[2]                      # e는 weather_get_text
             celcius = re.sub('[1-9,℃]', '', weather_get_text)                             # f는 celcius
-            print(team_stadium, '구장 날씨는', weather_get_text)
-            weather = celcius[1:]
+            print(celcius)
 
-            if weather == '맑음':
-                print(weather)
+            if weather_get_text == '맑음':
+                print(weather_get_text)
                 print('날씨관계로 6회까지만 진행합니다.')
                 return int(6)
             else:
-                print(weather)
+                print(weather_get_text)
                 print('정상적으로 9회 진행합니다.')
                 return int(9)
 
@@ -520,7 +513,6 @@ if __name__ == '__main__':
             weather = Weather.weather_search(game_team_list[0])
             game = Game(game_team_list)
             game.start_game(weather)
-
             break
         else:
-            print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
+            ctypes.windll.user32.MessageBoxW(None, '팀명을 잘못 입력하셨습니다.', "Error", 0)

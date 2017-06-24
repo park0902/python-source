@@ -1,7 +1,8 @@
 import random
 import re
 import os
-
+import urllib.request
+from bs4 import BeautifulSoup
 
 ###################################################################################################
 ## 기록 관련 클래스
@@ -159,7 +160,7 @@ class Game:
         {1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
 
-    INNING = 1  # 1 이닝부터 시작
+    INNING = 8  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
     OUT_CNT = 0  # 아웃 개수
@@ -168,6 +169,7 @@ class Game:
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
 
     def __init__(self, game_team_list):
+        self.continue_question = ''
         print('====================================================================================================')
         print('== 선수단 구성')
         print('====================================================================================================')
@@ -215,11 +217,12 @@ class Game:
         print('== 게임 종료!!!')
         print('====================================================================================================\n')
         self.show_record()
+        self.visreturn()
 
     # 팀별 선수 기록 출력
     def show_record(self):
         f = open(self.get_save_path(), 'a')
-
+        labels = ['선수이름', '타율', '타석', '안타', '홈런', '타점']
         print('====================================================================================================')
         print('==  {} | {}   =='.format(self.hometeam.team_name.center(44, ' ') if re.search('[a-zA-Z]+',
                                                                                              self.hometeam.team_name) is not None else self.hometeam.team_name.center(
@@ -240,24 +243,20 @@ class Game:
         awayteam_players = self.awayteam.player_list
 
         f.write(str(game_team_list[0]) + ', ')
-        f.write(str(Game.SCORE[0]) + ', ')
-        f.write(', ')
-        f.write(', ')
-        f.write(str(game_team_list[1]) + ', ')
-        f.write(str(Game.SCORE[1]) + '\n')
+        f.write(str(Game.SCORE[0]) + '\n')
 
-        f.write('선수이름' + ', ')
-        f.write('타율' + ', ')
-        f.write('타석' + ', ')
-        f.write('안타' + ', ')
-        f.write('홈런' + ', ')
-        f.write('타점' + '\n')
+
+        for label in labels:
+            f.write(label + ', ')
+        f.write('\n')
+
 
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
             ap = awayteam_players[i]
             ap_rec = ap.record
+            hp_labels = [hp.name, hp_rec.avg, hp_rec.atbat, hp_rec.hit, hp_rec.homerun, hp_rec.rbi]
 
             print('== {} | {} | {} | {} | {} | {} '.format(hp.name.center(6 + (4 - len(hp.name)), ' '),
                                                        str(hp_rec.avg).center(7, ' '),
@@ -268,26 +267,26 @@ class Game:
                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '),
                                                        str(ap_rec.homerun).center(5, ' '), str(ap_rec.rbi).center(5, ' ')))
 
-            f.write(str(hp.name) + ', ')
-            f.write(str(hp_rec.avg) + ', ')
-            f.write(str(hp_rec.atbat) + ', ')
-            f.write(str(hp_rec.hit) + ', ')
-            f.write(str(hp_rec.homerun) + ', ')
-            f.write(str(hp_rec.rbi) + '\n')
+            for hp_label in hp_labels:
+                f.write(str(hp_label) + ', ')
+            f.write('\n')
+
+
+        f.write(str(game_team_list[1]) + ', ')
+        f.write(str(Game.SCORE[1]) + '\n')
 
         for j in range(9):
             ap = awayteam_players[j]
             ap_rec = ap.record
-            f.write(str(ap.name) + ', ')
-            f.write(str(ap_rec.avg) + ', ')
-            f.write(str(ap_rec.atbat) + ', ')
-            f.write(str(ap_rec.hit) + ', ')
-            f.write(str(ap_rec.homerun) + ', ')
-            f.write(str(ap_rec.rbi) + '\n')
+            ap_labels = [ap.name, ap_rec.avg, ap_rec.atbat, ap_rec.hit, ap_rec.homerun, ap_rec.rbi]
 
+            for ap_label in ap_labels:
+                f.write(str(ap_label) + ', ')
+            f.write('\n')
 
+        f.write('\n')
         print('====================================================================================================')
-        f.close()
+        # f.close()
 
 
 
@@ -382,9 +381,9 @@ class Game:
                 '====================================================================================================\n')
         elif abs(Game.SCORE[0] - Game.SCORE[1]) > 4:
             print('CalledGame으로 {}'.format(self.hometeam.team_name if Game.SCORE[0] - Game.SCORE[1] > 0  else self.awayteam.team_name),abs(Game.SCORE[0] - Game.SCORE[1]),'점차로 승리하셨습니다')
-            Game.INNING = 10
             self.show_record()
-            quit()
+            self.countinue()
+            # quit()
 
     # 진루 및 득점 설정하는 메서드
     def advance_setting(self, hit_cnt):
@@ -459,13 +458,21 @@ class Game:
             if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                 return random_balls
 
+    def countinue(self):
+        self.continue_question = input("계속경기하려면 Y 아니면 N을 입력하세요. Y/N :  ")
+        if self.continue_question == 'Y':
+            print('=============================================================================================================')
+            print('한화(대전) | 롯데(부산) | 삼성(대구) | KIA(광주) | SK(인천) | LG(잠실) | 두산(잠실) | 넥센(고척) | KT(수원) | NC(마산) |')
+            print('=============================================================================================================')
+            game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
+            print('===========================================================================================================\n')
+
+
+        else:
+            quit()
 
 class Weather:
     def weather_search(team_for_loc):              # team1은 team_for_loc, loc은 location의 약자
-        import urllib.request
-        from  bs4 import BeautifulSoup
-        import re
-
         team_stadium = team_for_loc                 # abc는 team_stadium
         if team_stadium == '넥센':
             print('돔구장이라 상관없이 9회 진행합니다.')
@@ -506,7 +513,6 @@ class Weather:
                 print(weather)
                 print('정상적으로 9회 진행합니다.')
                 return int(9)
-
 
 if __name__ == '__main__':
     while True:
