@@ -386,7 +386,7 @@ print(exp_a)
 print(sum_exp_a)
 print(y)
 
-# 소프트맥스 함수
+# 소프트맥스 함수(오버플로 대책 X)
 def softmax(a):
     exp_a = np.exp(a)
     sum_exp_a = np.sum(exp_a)
@@ -396,19 +396,337 @@ def softmax(a):
 
 
 
+'''
+--------------------------------------------------------------------------------------
+- 소프트맥스 함수 구현 시 주의점
+ 
+    소프트맥스 함수는 지수 함수를 사용하는데 지수 함수란 것이 쉽게 아주 큰 값을 내기 때문에 오버플로 문제!!
+    
+    
+                  exp(ak)                             C exp(ak)
+    yk = -------------------------      =   ---------------------------
+            시그마(i=1, n)exp(ai)               C 시그마(i=1, n) exp(ai)
+            
+                                                        exp(ak + log C)
+                                        =   ------------------------------------
+                                               C 시그마(i=1, n) exp(ai + log C)
+                                               
+                                                          exp(ak + C')
+                                        =   --------------------------------------
+                                                   시그마(i=1, n) exp(ai + C')
+                                                   
+                                                   
+                                        C' : 어떤 값을 대입해도 상관없지만, 오버플로를 막을 목적으로
+                                             입력 신호 중 최댓값을 이용하는 것이 일반적
+--------------------------------------------------------------------------------------
+'''
+
+import numpy as np
+
+a = np.array([1010, 1000, 990])
+c = np.max(a)
+
+print(a-c)
+print(np.exp(a-c) / np.sum(np.exp(a-c)))
+
+
+# 소프트맥스 함수 (오버플로 대책 O)
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a-c)
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a / sum_exp_a
+
+    return y
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 소프트맥스 함수의 특징
+
+   - 소프트맥스 함수의 출력은 0 에서 1.0 사이의 실수
+    
+   - 소프트맥스 함수 출력의 총 합은 1
+    
+   - 신경망을 이용한 분류에서는 일반적으로 가장 큰 출력을 내는 뉴런에 해당하는 클래스로만 인식
+     그리고 소프트맥스 함수를 적용해도 출력이 가장 큰 뉴런의 위치는 달라지지 않는다
+    
+   - 결과적으로 신경망으로 분류할 때는 출력층의 소프트맥스 함수를 생략해도 된다
+    
+   - 현업에서도 지수 함수 계산에 드는 자원 낭비를 줄이고자 출력층의 소프트맥스 함수는 생략하는 것이 일반적
+--------------------------------------------------------------------------------------
+'''
+
+import numpy as np
+
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a - c)
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a / sum_exp_a
+
+    return y
+
+a = np.array([0.3, 2.9, 4.0])
+y = softmax(a)
+
+print(y)
+print(np.sum(y))
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- MNIST 데이터셋
+--------------------------------------------------------------------------------------
+'''
+
+import sys, os
+sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+import numpy as np
+from MNIST import load_mnist
+from PIL import Image
+
+
+(x_train, t_train), (x_test, t_test) = load_mnist(flatten=True, normalize=False)
+
+# 각 데이터의 형상 출력
+print(x_train.shape)
+print(t_train.shape)
+print(x_test.shape)
+print(t_test.shape)
+
+'''
+=> load_mnist 함수
+
+        읽은 MNIST 데이터를 "(훈련 이미지, 훈련 레이블), (시험 이미지, 시험 레이블) 형식으로 반환"
+        
+        인수로는 normalize, flatten, one_hot_label 로 세 인수 모두 bool 값!
+        
+                normalize : 입력 이미지의 픽셀 값을 0.0 ~ 1.0 사이의 값으로 정규화할지를 정한다
+                
+                flatten : 입력 이미지를 평탄하게, 즉 1차원 배열로 만들지 정한다
+                          
+                          False 로 설정하면 입력 이미지를 1 X 28 X 28 의 3차원 배열로 저장
+                          True 로 설정하면 784개의 원소로 이뤄진 1차원 배열로 저장  
+                          
+                one_hot_label : 레이블을 원-핫 인코딩 형태로 저장할지를 정한다 
+--------------------------------------------------------------------------------------
+'''
 
 
 
 
+'''
+--------------------------------------------------------------------------------------
+- MNIST 이미지 불러오기
+--------------------------------------------------------------------------------------
+'''
+
+import sys, os
+sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+import numpy as np
+from MNIST import load_mnist
+from PIL import Image
+
+
+def img_show(img):
+    pil_img = Image.fromarray(np.uint8(img))
+    pil_img.show()
+
+(x_train, t_train), (x_test, t_test) = load_mnist(flatten=True, normalize=False)
+
+img = x_train[0]
+label = t_train[0]
+print(label)  # 5
+
+print(img.shape)  # (784,)
+img = img.reshape(28, 28)  # 형상을 원래 이미지의 크기로 변형
+print(img.shape)  # (28, 28)
+
+img_show(img)
+
+'''
+=> 주의 사항
+
+        flatten = True 로 설정해 읽어 들인 이미지는 1차원 넘파이 배열로 저장되어 있다
+        그래서 이미지를 표시할 때는 원래 형상인 28 X 28 크기로 다시 변형해야한다
+        
+        reshape() 메서드에 원하는 형상을 인수로 지정하면 넘파이 배열의 형상을 바꿀 수 있다
+        
+        넘파이로 저장된 이미지 데이터를 PIL용 데이터 객체로 변환해야 하며, 이 변환은
+        Image.formarray() 가 수행
+--------------------------------------------------------------------------------------
+'''
 
 
 
+'''
+--------------------------------------------------------------------------------------
+- 신경망의 추론 처리
+
+
+    입력층 뉴런 784개
+    
+        이미지의 크리가 28 X 28 = 784
+        
+    출력층 뉴런 10개
+    
+        0 에서 9 까지의 숫자 구분
+        
+    은닉층 총 두 개로, 첫 번째 은닉층에는 50개의 뉴런을 두 번째 은닉층에서는 100개의 뉴런 배치
+    (여기서 50 과 100은 임의로 정한 값)
+--------------------------------------------------------------------------------------
+'''
+
+import sys, os
+sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+import numpy as np
+import pickle
+from MNIST import load_mnist
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a - c)
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a / sum_exp_a
+
+    return y
+
+
+def get_data():
+    (x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, flatten=True, one_hot_label=False)
+    return x_test, t_test
+
+
+def init_network():
+    with open("sample_weight.pkl", 'rb') as f:
+        network = pickle.load(f)
+    return network
+
+
+def predict(network, x):
+    W1, W2, W3 = network['W1'], network['W2'], network['W3']
+    b1, b2, b3 = network['b1'], network['b2'], network['b3']
+
+    a1 = np.dot(x, W1) + b1
+    z1 = sigmoid(a1)
+    a2 = np.dot(z1, W2) + b2
+    z2 = sigmoid(a2)
+    a3 = np.dot(z2, W3) + b3
+    y = softmax(a3)
+
+    return y
+
+x, t = get_data()
+network = init_network()
+accuracy_cnt = 0
+for i in range(len(x)):
+    y = predict(network, x[i])
+    p = np.argmax(y) # 확률이 가장 높은 원소의 인덱스를 얻는다.
+    if p == t[i]:
+        accuracy_cnt += 1
+
+print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
+
+'''
+- init_network()
+
+    pickle 파일인 sample_weight.pkl 에 저장된 학습된 가중치 매개변수 를 읽는다
+    sample_weight.pkl : 가중치와 편향 매개변수가 딕셔너리 변수로 저장되어있다
+    
+- predict()
+
+    각 레이블의 확률을 넘파이 배열로 반환
+    예) : [0.1, 0.3, 0.2 ..... 0.04]  => 이미지가 숫자 0일 확률 0.1, 이미지가 숫자 1일 확률 0.3 ...... 
+       
+    np.argmax() 함수로 이 배열에서 값이 가장 큰(확률이 가장 높은) 원소의 인덱스를 구한다
+    
+    
+--------------------------------------------------------------------------------------
+'''
 
 
 
+'''
+--------------------------------------------------------------------------------------
+- 배치 처리
+--------------------------------------------------------------------------------------
+'''
+
+import sys, os
+sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+import numpy as np
+import pickle
+from MNIST import load_mnist
 
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a - c)
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a / sum_exp_a
 
+    return y
+
+
+def get_data():
+    (x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, flatten=True, one_hot_label=False)
+    return x_test, t_test
+
+
+def init_network():
+    with open("sample_weight.pkl", 'rb') as f:
+        network = pickle.load(f)
+    return network
+
+
+def predict(network, x):
+    W1, W2, W3 = network['W1'], network['W2'], network['W3']
+    b1, b2, b3 = network['b1'], network['b2'], network['b3']
+
+    a1 = np.dot(x, W1) + b1
+    z1 = sigmoid(a1)
+    a2 = np.dot(z1, W2) + b2
+    z2 = sigmoid(a2)
+    a3 = np.dot(z2, W3) + b3
+    y = softmax(a3)
+
+    return y
+
+x, t = get_data()
+network = init_network()
+
+batch_size = 100    # 배치 크기
+accuracy_cnt = 0
+
+for i in range(0, len(x), batch_size):
+    x_batch = x[i:i+batch_size]
+    y_batch = predict(network, x_batch)
+    p = np.argmax(y_batch, axis=1)
+    accuracy_cnt += np.sum(p == t[i:i+batch_size])
+
+print('Accuracy : ' + str(float(accuracy_cnt) / len(x)))
+
+
+'''
+=> range() 함수가 반환하는 리스트를 바탕으로 x[i:i+batch_size] 에서 입력 데이터를 묶는다
+   예) batch_size 가 100 이므로 x[0:100], x[100:200] ...... 
+   
+   axis=1 이라는 인수를 추가한 것에 주의!
+   이는 100 X 10 의 배열 중 1번째 차원을 구성하는 가 원소에서(1번째 차원을 축으로) 최댓값의 인덱스를 찾도록 한 것
+   
+   
+--------------------------------------------------------------------------------------
+'''
 
