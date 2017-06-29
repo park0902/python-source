@@ -206,13 +206,236 @@ def cross_entropy_error(y, t):
 
 '''
 --------------------------------------------------------------------------------------
-- 미분
+- 수치 미분
+
+    아주 작은 차분으로 미분하는 것을 수치 미분
+    
+    해석적 미분은 오차를 포함하지 않은 진정한 미분 값을 구해준다!!
  
        df(x)                  f(x+h) - f(x)
      --------  = lim(h->0) --------------------
         dx                           h
+        
+        
+     h : 10 의 -4 정도의 값을 사용하면 좋은 결과를 얻는다고 알려져 있다
+     
+     수치 미분에는 오차가 포함된다!!
+     이 오차를 줄이기 위해 (x + h) 와 (x - h) 일 때의 함수 f의 차분을 계산하는 방법을 쓰기도 한다!!
+     이 차분은 x를 중심으로 그 전후의 차분을 계산하다는 의미에서 중심 차분 혹은 중앙 차분 이라 한다!!
+     (한편, (x + h) 와 x 의 차분은 전방 차분 이라 한다)
 --------------------------------------------------------------------------------------
 '''
+
+def numerical_diff(f, x):
+    h = 1e-4    # 0.0001
+    return (f(x+h) - f(x-h)) / (2*h)
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 수치 미분의 예
+
+        y = 0.01 x2 + 0.1 x
+--------------------------------------------------------------------------------------
+'''
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def function_1(x):
+    return 0.01 * x ** 2 + 0.1 * x
+
+
+def numerical_diff(f, x):
+    h = 1e-4    # 0.0001
+    return (f(x+h) - f(x-h)) / (2*h)
+
+
+x = np.arange(0.0, 20.0, 0.1)   # 0 에서 20 까지 0.1 간격의 배열 x 생성
+y = function_1(x)
+
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.plot(x, y)
+plt.show()
+
+
+# x = 5 일 때와 10 일 때 위 함수의 미분 계산
+print(numerical_diff(function_1, 5))
+print(numerical_diff(function_1, 10))
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 편미분
+
+    변수가 여럿인 함수에 대한 미분
+
+    f(x0, x1) = x0^2 + x1^2
+    
+    어느 변수에 대한 미분이냐. 즉. x0 와 x1 중 어느 변수에 대한 미분이냐를 구분해야 한다!!
+--------------------------------------------------------------------------------------
+'''
+
+import numpy as np
+
+def function_2(x):
+    return np.sum(x ** 2)
+    # 또는 return x[0] ** 2 + x[1] ** 2
+
+
+#                                      af
+# x0 = 3, x1 = 4 일때 x0 에 대한 편미분 ------ 구하기
+#                                      ax0
+
+def numerical_diff(f, x):
+    h = 1e-4    # 0.0001
+    return (f(x+h) - f(x-h)) / (2*h)
+
+
+def function_tmp1(x0):
+    return x0*x0 + 4.0**2.0
+
+print(numerical_diff(function_tmp1, 3.0))
+
+
+#                                      af
+# x0 = 3, x1 = 4 일때 x1 에 대한 편미분 ------ 구하기
+#                                      ax1
+
+def numerical_diff(f, x):
+    h = 1e-4    # 0.0001
+    return (f(x+h) - f(x-h)) / (2*h)
+
+
+def function_tmp2(x1):
+    return 3.0**2 + x1*x1
+
+print(numerical_diff(function_tmp2, 4.0))
+
+'''
+=> 편미분은 변수가 하나인 미분과 마찬가지로 특정 장소의 기울기를 구한다!!
+   단 여러 변수 중 목표 변수 하나에 초점을 맞추고 다른 변수는 값을 고정한다!!
+--------------------------------------------------------------------------------------
+'''
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 기울기
+
+    모든 변수의 편미분을 벡터로 정리한 것
+--------------------------------------------------------------------------------------
+'''
+
+import numpy as np
+
+def numerical_gradient(f, x):
+    h = 1e-4    # 0.0001
+    grad = np.zeros_like(x)     # x 와 형상이 같고 그 원소가 모드 0인 배열 생성
+
+    for idx in range(x.size):
+        tmp_val = x[idx]
+
+        # f(x+h) 계산
+        x[idx] = tmp_val + h
+        fxh1 = f(x)
+
+        # f(x-h) 계산
+        x[idx] = tmp_val - h
+        fxh2 = f(x)
+
+        grad[idx] = (fxh1 - fxh2) / (2 * h)
+        x[idx] = tmp_val    # 값 복원
+
+    return grad
+
+print(numerical_gradient(function_2, np.array([3.0, 4.0])))
+print(numerical_gradient(function_2, np.array([0.0, 2.0])))
+print(numerical_gradient(function_2, np.array([3.0, 0.0])))
+
+
+
+# 기울기의 결과에 마이너스를 붙인 벡터 그래프
+import numpy as np
+import matplotlib.pylab as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def _numerical_gradient_no_batch(f, x):
+    h = 1e-4  # 0.0001
+    grad = np.zeros_like(x)  # x와 형상이 같은 배열을 생성
+
+    for idx in range(x.size):
+        tmp_val = x[idx]
+
+        # f(x+h) 계산
+        x[idx] = float(tmp_val) + h
+        fxh1 = f(x)
+
+        # f(x-h) 계산
+        x[idx] = tmp_val - h
+        fxh2 = f(x)
+
+        grad[idx] = (fxh1 - fxh2) / (2 * h)
+        x[idx] = tmp_val  # 값 복원
+
+    return grad
+
+
+def numerical_gradient(f, X):
+    if X.ndim == 1:
+        return _numerical_gradient_no_batch(f, X)
+    else:
+        grad = np.zeros_like(X)
+
+        for idx, x in enumerate(X):
+            grad[idx] = _numerical_gradient_no_batch(f, x)
+
+        return grad
+
+
+def function_2(x):
+    if x.ndim == 1:
+        return np.sum(x ** 2)
+    else:
+        return np.sum(x ** 2, axis=1)
+
+
+def tangent_line(f, x):
+    d = numerical_gradient(f, x)
+    print(d)
+    y = f(x) - d * x
+    return lambda t: d * t + y
+
+
+if __name__ == '__main__':
+    x0 = np.arange(-2, 2.5, 0.25)
+    x1 = np.arange(-2, 2.5, 0.25)
+    X, Y = np.meshgrid(x0, x1)
+
+    X = X.flatten()
+    Y = Y.flatten()
+
+    grad = numerical_gradient(function_2, np.array([X, Y]))
+
+    plt.figure()
+    plt.quiver(X, Y, -grad[0], -grad[1], angles="xy", color="#666666")  # ,headwidth=10,scale=40,color="#444444")
+    plt.xlim([-2, 2])
+    plt.ylim([-2, 2])
+    plt.xlabel('x0')
+    plt.ylabel('x1')
+    plt.grid()
+    plt.legend()
+    plt.draw()
+    plt.show()
 
 
 
