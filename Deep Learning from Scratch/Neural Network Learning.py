@@ -366,7 +366,6 @@ print(numerical_gradient(function_2, np.array([3.0, 0.0])))
 # 기울기의 결과에 마이너스를 붙인 벡터 그래프
 import numpy as np
 import matplotlib.pylab as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 
 def _numerical_gradient_no_batch(f, x):
@@ -436,6 +435,284 @@ if __name__ == '__main__':
     plt.legend()
     plt.draw()
     plt.show()
+
+'''
+=> 기울기가 가리키는 쪽은 각 장소에서 함수의 출력 값을 가장 크게 줄이는 방향 !!
+--------------------------------------------------------------------------------------
+'''
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 경사법(경사 하강법)
+
+    기울기를 잘 이용해 함수의 최솟값(또는 가능한 작은 값) 을 찾으려는 것
+    
+    함수가 극솟값, 최솟값, 또 안장점 이 되는 장소에서는 기울기가 0 이다!!
+    
+    극솟값 : 국소적인 최솟값, 즉 한정된 범위에서의 최솟값인 점
+    안장점 : 어느 방향에서 보면 극댓값이고 다른 방향에서 보면 극솟값이 되는 점
+
+                   af                             af
+    x0 = x0 - n -------             x1 = x1 - n -------
+                  ax0                             ax1
+                  
+    n(eta) : 갱신하는 양     -> 이를 신경망 학습에서는 학습률(매개변수 값을 얼마나 갱신하느냐를 정하는 것)
+--------------------------------------------------------------------------------------
+'''
+
+def gradient_descent(f, init_x, lr=0.01, step_num=100):
+    x = init_x
+
+    for i in range(step_num):
+        grad = numerical_gradient(f, x)
+        x -= lr * grad
+
+    return x
+
+'''
+=> f : 최적화하려는 함수                init_x : 초깃값
+   lr : 학습률                        step_num : 경사법에 따른 반복 횟수
+   
+=> numerical_gradient(f,x)로 함수의 기울기 구하고 그 기울기에 학습률을 곱한 값으로 갱신하는 처리를 step_num 번 반복!! 
+--------------------------------------------------------------------------------------
+'''
+
+# 경사법으로 f(x0, x1) = x0^2 + x1^2 의 최솟값 구하기
+
+import numpy as np
+
+
+def function_2(x):
+    return x[0] ** 2 + x[1] ** 2
+
+
+def gradient_descent(f, init_x, lr=0.01, step_num=100):
+    x = init_x
+
+    for i in range(step_num):
+        grad = numerical_gradient(f, x)
+        x -= lr * grad
+
+    return x
+
+
+def numerical_gradient(f, x):
+    h = 1e-4    # 0.0001
+    grad = np.zeros_like(x)     # x 와 형상이 같고 그 원소가 모드 0인 배열 생성
+
+    for idx in range(x.size):
+        tmp_val = x[idx]
+
+        # f(x+h) 계산
+        x[idx] = tmp_val + h
+        fxh1 = f(x)
+
+        # f(x-h) 계산
+        x[idx] = tmp_val - h
+        fxh2 = f(x)
+
+        grad[idx] = (fxh1 - fxh2) / (2 * h)
+        x[idx] = tmp_val    # 값 복원
+
+    return grad
+
+
+init_x = np.array([-3.0, 4.0])
+
+print(gradient_descent(function_2, init_x = init_x, lr=0.1, step_num=100))
+
+
+
+# 경사법으로 f(x0, x1) = x0^2 + x1^2 의 최솟값 구하기 그래프
+import numpy as np
+import matplotlib.pylab as plt
+
+
+def gradient_descent(f, init_x, lr=0.01, step_num=100):
+    x = init_x
+    x_history = []
+
+    for i in range(step_num):
+        x_history.append(x.copy())
+
+        grad = numerical_gradient(f, x)
+        x -= lr * grad
+        print(x_history)
+    return x, np.array(x_history)
+
+
+def numerical_gradient(f, x):
+    h = 1e-4    # 0.0001
+    grad = np.zeros_like(x)     # x 와 형상이 같고 그 원소가 모드 0인 배열 생성
+
+    for idx in range(x.size):
+        tmp_val = x[idx]
+
+        # f(x+h) 계산
+        x[idx] = tmp_val + h
+        fxh1 = f(x)
+
+        # f(x-h) 계산
+        x[idx] = tmp_val - h
+        fxh2 = f(x)
+
+        grad[idx] = (fxh1 - fxh2) / (2 * h)
+        x[idx] = tmp_val    # 값 복원
+
+    return grad
+
+
+def function_2(x):
+    return x[0]**2 + x[1]**2
+
+init_x = np.array([-3.0, 4.0])
+
+
+lr = 0.1
+step_num = 20
+x, x_history = gradient_descent(function_2, init_x, lr=lr, step_num=step_num)
+
+plt.plot( [-5, 5], [0,0], '--b')
+plt.plot( [0,0], [-5, 5], '--b')
+plt.plot(x_history[:,0], x_history[:,1], 'o')
+
+plt.xlim(-3.5, 3.5)
+plt.ylim(-4.5, 4.5)
+plt.xlabel("X0")
+plt.ylabel("X1")
+plt.show()
+
+'''
+=> 학습률이 너무 크면 큰 값으로 발산!
+   학습률이 너무 작으면 거의 갱신되지 않은 채로 끝나버린다!!
+   
+=> 학습률 같은 매개변수를 하이퍼파라미터 라고 한다!
+   이는 가중치와 편향 같은 신경망의 매개변수와는 성질이 다른 매개변수!
+   
+=> 신경망의 가중치 매개변수는 훈련 데이터와 학습 알고리즘에 의해서 자동으로 획득되는 매개변수인 반면,
+   학습률 같은 하이퍼파라미터는 사람이 직접 설정해야하는 매개변수!!
+--------------------------------------------------------------------------------------
+'''
+
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 신경망에서의 기울기
+
+    가중치 매개변수에 대한 손실 함수의 기울기
+    
+    예 : 형상이 2 X 3, 가중치가 W, 손실 함수가 L 인 신경망
+         
+              ( W11     W21     W31 )
+         W = 
+              ( W12     W22     W32 )
+         
+         
+                 aL      aL      aL
+                ----    ----    ----
+       aL       aW11    aW21    aW31
+      ---- =     
+       aW        aL      aL      aL
+                ----    ----    ----
+                aW12    aW22    aW32
+--------------------------------------------------------------------------------------
+'''
+
+# 실제로 기울기 구하는 코드(안됨XXXXXXXXXXX)
+import sys, os
+sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+import numpy as np
+from common.functions import softmax, cross_entropy_error
+from common.gradient import numerical_gradient
+
+
+class simpleNet:
+    def __init__(self):
+        self.W = np.random.randn(2,3) # 정규분포로 초기화
+
+    def predict(self, x):
+        return np.dot(x, self.W)
+
+    def loss(self, x, t):
+        z = self.predict(x)
+        y = softmax(z)
+        loss = cross_entropy_error(y, t)
+
+        return loss
+
+net = simpleNet()
+
+x = np.array([0.6, 0.9])
+t = np.array([0, 0, 1])     # 정답 레이블
+p = net.predict(x)
+
+f = lambda w: net.loss(x, t)
+dW = numerical_gradient(f, net.W)
+
+print(net.W)                # 가중치 매개변수
+print(p)
+print(np.argmax(p))          # 최댓값의 인덱스
+print(net.loss(x, t))
+print(dW)
+
+
+
+'''
+--------------------------------------------------------------------------------------
+- 학습 알고리즘 구현하기
+
+    전체
+    
+        신경망에는 적응 가능한 가중치와 편향이 있고, 이 가중치와 편향을 훈련 데이터에 적응하도록 조정하는 과정을 학습이라 한다!!
+        
+    1단계 - 미니배치
+    
+        훈련 데이터 중 일부를 무작위로 가져온다. 이렇게 선별한 데이터를 미니배치라 하며, 
+        그 미니배치의 속실 함수 값을 줄이는 것이 목표
+        
+    2단계 - 기울기 산출
+    
+        미니배치의 손실 함수 값을 줄이기 위해 각 가중치 매개변수의 기울기를 구한다
+        기울기는 손실 함수의 값을 가장 작게 하는 방향을 제시!!
+        
+    3단계 - 매개변수 갱신
+    
+        가중치 매개변수를 기울기 방향으로 아주 조금 갱신!!
+        
+    4단계 - 반복
+    
+        1~3단계 반복!!
+--------------------------------------------------------------------------------------
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
