@@ -1,58 +1,29 @@
-# import numpy as np
-# import matplotlib.pyplot as plt
-#
-# plt.ion()
-# fig = plt.figure()
-#
-# sf = fig.add_subplot(111)
-#
-# plt.xlim()
-# plt.ylim()
-#
-# fig, axex = plt.subplot(1,1)
-#
-# while True:
-#     for i in range(100):
-#         for j in range(100):
-#             axes[i,j]
+import matplotlib.pyplot as plt
+import matplotlib.animation as anim
+import numpy as np
 
+def update_plot(i, fig, scat):
+    scat.set_offsets(([0,i], [100, i]))
+    print('Frame : ',i)
 
-# from numpy.random import randn
-# import matplotlib.pyplot as plt
-#
-# fig = plt.figure()
-# data = randn(100000).cumsum()
-#
-# plt.plot(data), plt.pause(1)
+    return scat,
 
+fig = plt.figure()
 
+x = [0, 50, 100]
+y = [0, 0, 0]
 
-# import matplotlib.pyplot as plt
-# import matplotlib.animation as anim
-# import numpy as np
-#
-# def update_plot(i, fig, scat):
-#     scat.set_offsets(([0,i], [100, i]))
-#     print('Frame : ',i)
-#
-#     return scat,
-#
-# fig = plt.figure()
-#
-# x = [0, 50, 100]
-# y = [0, 0, 0]
-#
-# ax = fig.add_subplot(111)
-# ax.grid(True, linestyle='-', color='0.75')
-# ax.set_xlim([-50, 200])
-# ax.set_ylim([-50, 200])
-#
-# scat = plt.scatter(x, y)
-# scat.set_alpha(0.8)
-# ani = anim.FuncAnimation(fig, update_plot, fargs=(fig, scat),
-#                          frames=100, interval=100)
-#
-# plt.show()
+ax = fig.add_subplot(111)
+ax.grid(True, linestyle='-', color='0.75')
+ax.set_xlim([-50, 200])
+ax.set_ylim([-50, 200])
+
+scat = plt.scatter(x, y)
+scat.set_alpha(0.8)
+ani = anim.FuncAnimation(fig, update_plot, fargs=(fig, scat),
+                         frames=100, interval=100)
+
+plt.show()
 
 
 
@@ -285,4 +256,44 @@ class SubplotAnimation(animation.TimedAnimation):
 ani = SubplotAnimation()
 # ani.save('test_sub.mp4')
 plt.show()
+
+
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+lstx = []
+lsty = []
+
+plt.ion()
+fig = plt.figure()
+sf = fig.add_subplot(111)
+
+plt.xlim([0, 60])
+plt.ylim([300, 1000])
+
+line1, = sf.plot(lstx, lsty, 'r-')
+
+
+for i in np.random.randint(60):
+    lstx.append(i)
+    lsty.append(i)
+    line1.set_xdata(lstx)
+    line1.set_ydata(lsty)
+
+    plt.draw(), plt.pause(0.1)
+
+plt.show()
+
+
+
+
+
+
+
+
+
 
