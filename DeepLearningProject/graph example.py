@@ -31,7 +31,7 @@ plt.ion() # enable interactivity
 
 xList=list()
 yList=list()
-
+dr
 for i in np.arange(50):
     y=np.random.random()
     xList.append(i)

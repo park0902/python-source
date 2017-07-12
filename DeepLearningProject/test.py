@@ -272,8 +272,8 @@ class Model:
 
 
 
-training_epochs = 5
-batch_size = 100
+training_epochs = 2
+batch_size = 1000
 
 mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
 
@@ -294,35 +294,23 @@ stime = time.time()
 
 
 
-def makeFig1():
-    plt.subplot(1, training_epochs, 1)
+def makeFig():
+    # plt.figure(1)
     plt.plot(Xlist,Ylist)
-    plt.title('Batch_size & Cost Graph')
+    # plt.title('Batch_size & Cost Graph')
     plt.grid(True)
     plt.ylabel('Cost')
-    plt.xlabel('Batch_size')
-    plt.legend(loc='upper right')
-
-
-def makeFig2():
-    plt.subplot(1, training_epochs, 2)
-    plt.plot(Xlist,Ylist1)
-    plt.title('Batch_size & Cost Graph')
-    plt.grid(True)
-    plt.ylabel('Cost')
-    plt.xlabel('Batch_size')
-    plt.legend(loc='upper right')
-
-
+    plt.xlabel('Batch_Count')
 
 Xlist = []
 Ylist = []
-Ylist1 = []
+
+
 # ★ agument_mini_batch만 할 경우
 for epoch in range(training_epochs):
     avg_cost_list = np.zeros(len(models))
     total_batch = int(mnist.train.num_examples / batch_size)
-
+    print(total_batch)
     # train_writer = tf.summary.FileWriter('./logs/train', sess.graph)
     for i in range(total_batch):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size,shuffle=True)
@@ -332,15 +320,20 @@ for epoch in range(training_epochs):
             c, _ = m.train(agu_batch_xs, agu_batch_ys)
             # c, _ = m.train(batch_xs, batch_ys)
             avg_cost_list[idx] += c / (total_batch)
-        # print(i, avg_cost_list[idx])
+            print(i, avg_cost_list)
+            if i%(total_batch-1) == 0:
+                print(i, avg_cost_list[idx])
+                Xlist.append(i)
+                Ylist.append(avg_cost_list[idx])
+            plt.title("model " + str(idx + 1))
+            plt.figure(int(idx) + 1)
+            drawnow(makeFig)
+            plt.pause(0.01)
 
-        Xlist.append(i)
-        Ylist.append(avg_cost_list[0])
-        Ylist1.append(avg_cost_list[1])
-        drawnow(makeFig1)
-        drawnow(makeFig2)
-                # drawnow(makeFig1)
-        plt.pause(0.001)
+
+        # print(Xlist, Ylist)
+
+
             # train_writer.add_summary(s)
     print('Epoch: ', '%04d' % (epoch + 1), 'cost =', avg_cost_list)
 print('Learning Finished!')
