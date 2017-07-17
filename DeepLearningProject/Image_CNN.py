@@ -115,7 +115,7 @@ class Model:
             self.L2 = self.parametric_relu(self.L2, 'R2')
             self.L2 = tf.nn.max_pool(value=self.L2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 14x14 -> 7x7
             # self.L2 = tf.layers.dropout(inputs=self.L2, rate=self.dropout_rate, training=self.training)
-
+            self.L2 = tf.nn.b
             ############################################################################################################
             ## ▣ Convolution 계층 - 3
             ##  ⊙ 합성곱 계층 → filter: (3, 3), output: 128 개, 초기값: He
