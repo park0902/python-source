@@ -32,7 +32,7 @@ z1_BN = tf.matmul(x,w1_BN)
 
 # Calculate batch mean and variance
 batch_mean1, batch_var1 = tf.nn.moments(z1_BN,[0])
-
+x
 # Apply the initial batch normalizing transform
 z1_hat = (z1_BN - batch_mean1) / tf.sqrt(batch_var1 + epsilon)
 
