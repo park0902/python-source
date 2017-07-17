@@ -141,16 +141,16 @@ Ylist = []
 total_batch = 10
 for epoch in range(2):
     # train_writer = tf.summary.FileWriter('./logs/train', sess.graph)
-    for i in range(1,20,1):
+    for i in range(1,20*epoch,1):
         for idx in range(2):
-            print(i, idx)
+            # print(i, idx)
             if i%(total_batch) == 0:
                 print(i, idx)
                 Xlist.append(i)
-                Ylist.append(np.random.rand(10))
+                Ylist.append(np.random.rand(1))
                 plt.title("model " + str(idx + 1))
                 plt.figure(int(idx) + 1)
-                drawnow(makeFig)
+            drawnow(makeFig)
             plt.pause(0.1)
 
 
@@ -193,6 +193,7 @@ for epoch in range(2):
 
 
 
+num = 5
 
-
-
+for i in range(num):
+    listt = []

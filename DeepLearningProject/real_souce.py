@@ -290,7 +290,7 @@ class Model:
         return pos + neg
 
 
-training_epochs = 100
+training_epochs = 3
 batch_size = 1000
 
 mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
@@ -311,47 +311,41 @@ import time
 # 시작 시간 체크
 stime = time.time()
 
-Xlist = []
-Ylist_model1 = []
-Ylist_model2 = []
 
+# 실시간 그래프(Epoch & Avg_cost 그래프)
+# 실시간 그래프(model & Accuracy 그래프)
+#####################################################################
+epochs = []
+model = []
 
-def makeFig1():
-    # plt.scatter(Xlist, Ylist_model1, alpha=0.8, c='red', edgecolors='none', s=30, label='model1')
-    plt.plot(Xlist, Ylist_model1, c='red', label='model1')
-    # plt.figure(1)
-    #     plt.scatter(Xlist,Ylist,color='red')
-    # plt.title('Batch_size & Cost Graph')
+model1 = []
+model2 = []
+accuracy = []
+
+label = ['model1', 'model2']
+color = ['red', 'blue']
+moddle = [model1, model2]
+
+def make_e_a_Fig():
+    plt.subplot(1,2,1)
+    for m, c, l in zip(moddle, color, label):
+        plt.plot(epochs, m, c=c, lw=2, ls="--", marker="o", label=l)
+    plt.title('Epoch & Cost Graph');plt.legend(loc=1)
+    plt.xlabel('Epoch');plt.ylabel('Cost')
+    plt.grid(True);plt.hold(True)
+
+def make_m_a_Fig():
+    plt.subplot(1,2,2)
+    plt.plot(model, accuracy, c="g", lw=2, ls="--", marker="o")
+    plt.title('Model & Accuracy')
+    plt.xlabel('Model');plt.ylabel('Accuracy')
     plt.grid(True)
-
-    # plt.scatter(Xlist, Ylist_model2, alpha=0.8, c='blue', edgecolors='none', s=30, label='model2')
-    plt.plot(Xlist, Ylist_model2, c='blue', label='model2')
-    # plt.figure(1)
-    #     plt.scatter(Xlist,Ylist,color='red')
-    # plt.title('Batch_size & Cost Graph')
-    plt.grid(True)
-    plt.ylabel('Cost')
-    plt.xlabel('Epoch')
-    plt.legend(loc=1)
-
-
-# def makeFig2():
-#     for color, group in zip(colors_model2, groups_model2):
-#         plt.scatter(Xlist, Ylist_model2, alpha=0.8, c=colors_model2, edgecolors='none', s=30, label=groups_model2)
-#         # plt.figure(1)
-#         #     plt.scatter(Xlist,Ylist,color='red')
-#         # plt.title('Batch_size & Cost Graph')
-#         plt.grid(True)
-#         plt.ylabel('Cost')
-#         plt.xlabel('Epoch')
-#         plt.legend(loc=1)
-
+##########################################################################
 
 
 for epoch in range(training_epochs):
     avg_cost_list = np.zeros(len(models))
     total_batch = int(mnist.train.num_examples / batch_size)
-    # print(total_batch)
 
     for i in range(0, total_batch + 1, 5):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size, shuffle=True)
@@ -361,23 +355,18 @@ for epoch in range(training_epochs):
             c, _ = m.train(batch_xs, batch_ys)
             # c, _ = m.train(batch_xs, batch_ys)
             avg_cost_list[idx] += c / (total_batch)
-            # print(i, avg_cost_list)
+#######################################################################
             if ((i % total_batch == 0) & i > 0):
-                Xlist.append(epoch + 1)
-                Xlist = list(set(Xlist))
+                epochs.append(epoch + 1)
+                epochs = list(set(epochs))
                 if idx == 0:
-                    Ylist_model1.append(avg_cost_list[idx])
+                    model1.append(avg_cost_list[idx])
                 if idx == 1:
-                    Ylist_model2.append(avg_cost_list[idx])
-                print('Xlist', Xlist)
-                print('Ylist1', Ylist_model1)
-                print('Ylist2', Ylist_model2)
+                    model2.append(avg_cost_list[idx])
 
-        drawnow(makeFig1)
-
+        drawnow(make_e_a_Fig)
         plt.pause(0.1)
-
-        # print(Xlist, Ylist)
+#########################################################################
 
 
         # train_writer.add_summary(s)
@@ -396,11 +385,27 @@ model_result[:, 0] = range(0, test_size)
 for idx, m in enumerate(models):
     # print(idx, 'Accuracy: ', m.get_accuracy(test_x, test_y))
     # p = m.predict(test_x)
+
     print(idx, 'Accuracy: ', m.get_accuracy(mnist.test.images, mnist.test.labels))
+
+    moddle.append(idx+1)
+    accuracy.append(m.get_accuracy(mnist.test.images, mnist.test.labels))
+
     p = m.predict(mnist.test.images)
     model_result[:, 1] = np.argmax(p, 1)
+
+
+#################################################################################################
+
+##################################################################################################
+
     for result in model_result:
         predictions[result[0], result[1]] += 1
+
+##################################################################################################
+drawnow(make_m_a_Fig)
+plt.pause(0.1)
+##################################################################################################
 
 # ensemble_correct_prediction = tf.equal(tf.argmax(predictions, 1), tf.argmax(test_y, 1))
 ensemble_correct_prediction = tf.equal(tf.argmax(predictions, 1), tf.argmax(mnist.test.labels, 1))
