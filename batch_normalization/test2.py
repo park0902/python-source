@@ -66,8 +66,6 @@
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-from drawnow import drawnow
 
 class Model:
     def __init__(self, sess, name):
@@ -78,6 +76,25 @@ class Model:
         self._build_net()
 
 
+    def batch_norm(self, logits, is_test, iteration, offset, convolutional=False):
+        self.exp_moving_avg = tf.train.ExponentialMovingAverage(0.999, iteration)
+        self.bnepsilon = 1e-5
+
+        if convolutional:
+            self.mean, self.variance = tf.nn.moments(logits, [0, 1, 2])
+        else:
+            self.mean, self.variance = tf.nn.moments(logits, [0])
+
+        self.update_moving_everages = self.exp_moving_avg.apply([self.mean, self.variance])
+
+        self.m = tf.cond(is_test, lambda: self.exp_moving_avg.average(self.mean), lambda: self.mean)
+        self.v = tf.cond(is_test, lambda: self.exp_moving_avg.average(self.variance), lambda: self.variance)
+        self.Ybn = tf.nn.batch_normalization(logits, self.m, self.v, offset, None, self.bnepsilon)
+
+        return self.Ybn, self.update_moving_everages
+
+
+
 
     def _build_net(self):
         with tf.variable_scope(self.name):
@@ -86,6 +103,7 @@ class Model:
             X_img = tf.reshape(self.X, shape=[-1, 28, 28, 1])
             self.Y = tf.placeholder(tf.float32, [None, 10], name='y_data')
 
+            self.iter = tf.placeholder(tf.int32, name='iter')
 
             ############################################################################################################
             ## ▣ Convolution 계층 - 1
@@ -98,8 +116,11 @@ class Model:
             self.W1 = tf.get_variable(name='W1', shape=[3, 3, 1, 32], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b1 = tf.Variable(tf.constant(value=0.001, shape=[32]), name='b1')
             self.L1 = tf.nn.conv2d(input=X_img, filter=self.W1, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y1bn, self.update_ema1 = self.batch_norm(self.L1, self.training, self.iter, self.b1, convolutional=True)
+
             # self.L1 = tf.nn.relu(self.L1, name='R1')
-            self.L1 = self.parametric_relu(self.L1, 'R1')
+            self.L1 = self.parametric_relu(self.Y1bn, 'R1')
             self.L1 = tf.nn.max_pool(value=self.L1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 28x28 -> 14x14
             # self.L1 = tf.layers.dropout(inputs=self.L1, rate=self.dropout_rate, training=self.training)
 
@@ -114,8 +135,12 @@ class Model:
             self.W2 = tf.get_variable(name='W2', shape=[3, 3, 32, 64], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b2 = tf.Variable(tf.constant(value=0.001, shape=[64]), name='b2')
             self.L2 = tf.nn.conv2d(input=self.L1, filter=self.W2, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y2bn, self.update_ema2 = self.batch_norm(self.L2, self.training, self.iter, self.b2,
+                                                          convolutional=True)
+
             # self.L2 = tf.nn.relu(self.L2, name='R2')
-            self.L2 = self.parametric_relu(self.L2, 'R2')
+            self.L2 = self.parametric_relu(self.Y2bn, 'R2')
             self.L2 = tf.nn.max_pool(value=self.L2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 14x14 -> 7x7
             # self.L2 = tf.layers.dropout(inputs=self.L2, rate=self.dropout_rate, training=self.training)
 
@@ -130,8 +155,12 @@ class Model:
             self.W3 = tf.get_variable(name='W3', shape=[3, 3, 64, 128], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b3 = tf.Variable(tf.constant(value=0.001, shape=[128]), name='b3')
             self.L3 = tf.nn.conv2d(input=self.L2, filter=self.W3, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y3bn, self.update_ema3 = self.batch_norm(self.L3, self.training, self.iter, self.b3,
+                                                          convolutional=True)
+
             # self.L3 = tf.nn.relu(self.L3, name='R3')
-            self.L3 = self.parametric_relu(self.L3, 'R3')
+            self.L3 = self.parametric_relu(self.Y3bn, 'R3')
             # self.L3 = tf.layers.dropout(inputs=self.L3, rate=self.dropout_rate, training=self.training)
             # self.L3 = tf.nn.max_pool(value=self.L3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 7x7 -> 4x4
 
@@ -146,8 +175,13 @@ class Model:
             self.W4 = tf.get_variable(name='W4', shape=[3, 3, 128, 256], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b4 = tf.Variable(tf.constant(value=0.001, shape=[256]), name='b4')
             self.L4 = tf.nn.conv2d(input=self.L3, filter=self.W4, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y4bn, self.update_ema4 = self.batch_norm(self.L4, self.training, self.iter, self.b4,
+                                                          convolutional=True)
+
             # self.L4 = tf.nn.relu(self.L4, name='R4')
-            self.L4 = self.parametric_relu(self.L4, 'R4')
+
+            self.L4 = self.parametric_relu(self.Y4bn, 'R4')
             # self.L4 = tf.layers.dropout(inputs=self.L4, rate=self.dropout_rate, training=self.training)
             self.L4 = tf.reshape(self.L4, shape=[-1, 7 * 7 * 256])
 
@@ -160,9 +194,15 @@ class Model:
             ############################################################################################################
             self.W5 = tf.get_variable(name='W5', shape=[7 * 7 * 256, 625], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b5 = tf.Variable(tf.constant(value=0.001, shape=[625], name='b5'))
+
             # self.L5 = tf.nn.relu(tf.matmul(self.L4, self.W5) + self.b5, name='R5')
-            self.L5 = self.parametric_relu(tf.matmul(self.L4, self.W5) + self.b5, 'R5')
+            self.L5 = tf.matmul(self.L4, self.W5) + self.b5
+
+            self.Y5bn, self.update_ema5 = self.batch_norm(self.L5, self.training, self.iter, self.b5)
+
+            self.L5 = self.parametric_relu(self.Y5bn, 'R5')
             self.L5 = tf.layers.dropout(inputs=self.L5, rate=self.dropout_rate, training=self.training)
+
 
             ############################################################################################################
             ## fully connected 계층 - 2
@@ -173,8 +213,13 @@ class Model:
             ############################################################################################################
             self.W6 = tf.get_variable(name='W6', shape=[625, 625], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b6 = tf.Variable(tf.constant(value=0.001, shape=[625], name='b6'))
+
             # self.L6 = tf.nn.relu(tf.matmul(self.L5, self.W6) + self.b6, name='R6')
-            self.L6 = self.parametric_relu(tf.matmul(self.L5, self.W6) + self.b6, 'R6')
+            self.L6 = tf.matmul(self.L5, self.W6) + self.b6
+
+            self.Y6bn, self.update_ema6 = self.batch_norm(self.L6, self.training, self.iter, self.b6)
+
+            self.L6 = self.parametric_relu(self.Y6bn, 'R6')
             self.L6 = tf.layers.dropout(inputs=self.L6, rate=self.dropout_rate, training=self.training)
 
             ############################################################################################################
@@ -206,7 +251,7 @@ class Model:
         neg = alphas * (_x - abs(_x)) * 0.5
         return pos + neg
 
-training_epochs = 3
+training_epochs = 20
 batch_size = 1000
 
 mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
@@ -226,57 +271,17 @@ import time
 # 시작 시간 체크
 stime = time.time()
 
-###############################################################################
-# 실시간 그래프(Epoch & Avg_cost 그래프)
-# 실시간 그래프(Model & Accuracy 그래프)
-###############################################################################
-epochs=[];modell=[];accuracy=[]
-
-model1=[];model2=[]
-
-label = ['model1', 'model2']
-color = ['red', 'blue']
-moddle = [model1, model2]
-
-def make_e_a_Fig():
-    for m, c, l in zip(moddle, color, label):
-        plt.plot(epochs, m, c=c, lw=2, ls="--", marker="o", label=l)
-    plt.title('Epoch & Cost Graph');plt.legend(loc=1)
-    plt.xlabel('Epoch');plt.ylabel('Cost')
-    plt.grid(True)
-
-def make_m_a_Fig():
-    plt.plot(modell, accuracy, c="g", lw=2, ls="--", marker="o")
-    plt.title('Model & Accuracy')
-    plt.xlabel('Model');plt.ylabel('Accuracy')
-    plt.grid(True)
-###############################################################################
-###############################################################################
-
 for epoch in range(training_epochs):
     avg_cost_list = np.zeros(len(models))
     total_batch = int(mnist.train.num_examples / batch_size)
 
-    for i in range(0,total_batch+1,5):
+    for i in range(1,total_batch+1,5):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
         # 각각의 모델 훈련
         for idx, m in enumerate(models):
             c, a, _ = m.train(batch_xs, batch_ys)
             avg_cost_list[idx] += c / total_batch
-
-###############################################################################
-###############################################################################
-            if((i % total_batch == 0) & i > 0):
-                epochs.append(epoch + 1)
-                epochs = list(set(epochs))
-                for n, nm in zip([num for num in range(num_models)], moddle):
-                    if idx == n:
-                        nm.append(avg_cost_list[idx])
-        drawnow(make_e_a_Fig)
-        # plt.pause(0.1)
-###############################################################################
-###############################################################################
-
+            # print('accuracy: ', a)
     print('Epoch: ', '%04d' % (epoch + 1), 'cost =', avg_cost_list)
 print('Learning Finished!')
 
@@ -287,24 +292,11 @@ test_size = len(test_y)
 predictions = np.zeros(test_size * 10).reshape(test_size, 10)
 
 for idx, m in enumerate(models):
-    
-###############################################################################
-###############################################################################
-    modell.append(idx+1)
-    accuracy.append(m.get_accuracy(test_x, test_y))
-    drawnow(make_m_a_Fig)
-    # plt.pause(0.1)
-###############################################################################
-###############################################################################
-
     print(idx, 'Accuracy: ', m.get_accuracy(test_x, test_y))
     p = m.predict(test_x)
     # print(idx, 'Accuracy: ', m.get_accuracy(mnist.test.images, mnist.test.labels))  # 전체 test 데이터에 대해 수행하는 경우
     # p = m.predict(mnist.test.images)  # 전체 test 데이터에 대해 수행하는 경우
     predictions += p
-
-
-
 
 ensemble_correct_prediction = tf.equal(tf.argmax(predictions, 1), tf.argmax(test_y, 1))
 # ensemble_correct_prediction = tf.equal(tf.argmax(predictions, 1), tf.argmax(mnist.test.labels, 1))  # 전체 test 데이터에 대해 수행하는 경우

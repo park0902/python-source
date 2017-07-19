@@ -61,7 +61,10 @@
 ##   - tf.train.FtrlOptimizer
 ##   - tf.train.ProximalGradientDescentOptimizer
 ##   - tf.train.ProximalAdagradOptimizer
-########################################################################################################################
+######################################################################################################################
+
+
+
 
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
