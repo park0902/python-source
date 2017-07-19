@@ -290,3 +290,10 @@ img = imread('d:\data\\40689.jpg')
 plt.imshow(img);plt.hold(True)
 
 plt.show()
+
+
+
+
+
+
+
