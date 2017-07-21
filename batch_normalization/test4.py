@@ -75,50 +75,23 @@ class Model:
         self.dropout_rate = 0.7
         self._build_net()
 
-    # def batch_norm(self, x, n_out, phase_train, convolutional=False):
-    #     with tf.variable_scope('bn'):
-    #         self.beta = tf.Variable(tf.constant(0.0, shape=[n_out]),name='beta', trainable=True)
-    #         self.gamma = tf.Variable(tf.constant(1.0, shape=[n_out]),name='gamma', trainable=True)
-    #         self.ema = tf.train.ExponentialMovingAverage(decay=0.5)
-    #
-    #         if convolutional:
-    #             self.batch_mean, self.batch_var = tf.nn.moments(x, [0, 1, 2], name='moments')
-    #         else:
-    #             self.batch_mean, self.batch_var = tf.nn.moments(x, [0], name='moments')
-    #
-    #         def mean_var_with_update():
-    #             ema_apply_op = self.ema.apply([self.batch_mean, self.batch_var])
-    #             with tf.control_dependencies([ema_apply_op]):
-    #                 return tf.identity(self.batch_mean), tf.identity(self.batch_var)
-    #
-    #         mean, var = tf.cond(phase_train,
-    #                             mean_var_with_update,
-    #                             lambda: (ema.average(batch_mean), ema.average(batch_var)))
-    #         normed = tf.nn.batch_normalization(x, mean, var, beta, gamma, 1e-3)
-    #     return normed
 
+    def batch_norm(self, Ylogits, is_test, iteration, convolutional=False):
+        exp_moving_avg = tf.train.ExponentialMovingAverage(0.9, iteration)
+        bnepsilon = 1e-5
 
+        if convolutional:
+            mean, variance = tf.nn.moments(Ylogits, [0, 1, 2])
+        else:
+            mean, variance = tf.nn.moments(Ylogits, [0])
 
-    def batch_norm(self, x, channel, phase_train, scope='bn', decay=0.9, eps=1e-5):
-        with tf.variable_scope(scope):
-            beta = tf.get_variable('beta', initializer=tf.zeros([channel]))
-            gamma = tf.get_variable('gamma', initializer=tf.ones([channel]))
-            mean = tf.get_variable('mean', initializer=tf.zeros([channel]), trainable=False)
-            var = tf.get_variable('var', initializer=tf.ones([channel]), trainable=False)
+        update_moving_everages = exp_moving_avg.apply([mean, variance])
 
-            def case_train():
-                batch_mean, batch_var = tf.nn.moments(x, [0,1,2])
-                train_mean = tf.assign(mean, mean*decay + batch_var*(1-decay))
-                train_var = tf.assign(var, var*decay + batch_var*(1-decay))
-                with tf.control_dependencies([train_mean, train_var]):
-                    return tf.nn.batch_normalization(x, batch_mean, batch_var, beta, gamma, eps)
+        m = tf.cond(is_test, lambda: exp_moving_avg.average(mean), lambda: mean)
+        v = tf.cond(is_test, lambda: exp_moving_avg.average(variance), lambda: variance)
+        Ybn = tf.nn.batch_normalization(Ylogits, m, v, 0.0, 1.0, bnepsilon)
 
-            def case_test():
-                return tf.nn.batch_normalization(x, mean, var, beta, gamma, eps)
-
-            out = tf.cond(phase_train, lambda:case_train(), lambda:case_test())
-
-        return out
+        return Ybn, update_moving_everages
 
 
     def _build_net(self):
@@ -127,6 +100,8 @@ class Model:
             self.X = tf.placeholder(tf.float32, [None, 784], name='x_data')
             X_img = tf.reshape(self.X, shape=[-1, 28, 28, 1])
             self.Y = tf.placeholder(tf.float32, [None, 10], name='y_data')
+
+            self.iter = tf.placeholder(tf.int32, name='iter')
 
             ############################################################################################################
             ## ▣ Convolution 계층 - 1
@@ -139,8 +114,11 @@ class Model:
             self.W1 = tf.get_variable(name='W1', shape=[3, 3, 1, 32], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b1 = tf.Variable(tf.constant(value=0.001, shape=[32]), name='b1')
             self.L1 = tf.nn.conv2d(input=X_img, filter=self.W1, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y1bn, self.update_ema1 = self.batch_norm(self.L1, self.training, self.iter, convolutional=True)
+
             # self.L1 = tf.nn.relu(self.L1, name='R1')
-            self.L1 = self.parametric_relu(self.L1, 'R1')
+            self.L1 = self.parametric_relu(self.Y1bn, 'R1')
             self.L1 = tf.nn.max_pool(value=self.L1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 28x28 -> 14x14
             # self.L1 = tf.layers.dropout(inputs=self.L1, rate=self.dropout_rate, training=self.training)
 
@@ -155,8 +133,11 @@ class Model:
             self.W2 = tf.get_variable(name='W2', shape=[3, 3, 32, 64], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b2 = tf.Variable(tf.constant(value=0.001, shape=[64]), name='b2')
             self.L2 = tf.nn.conv2d(input=self.L1, filter=self.W2, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y2bn, self.update_ema2 = self.batch_norm(self.L2, self.training, self.iter, convolutional=True)
+
             # self.L2 = tf.nn.relu(self.L2, name='R2')
-            self.L2 = self.parametric_relu(self.L2, 'R2')
+            self.L2 = self.parametric_relu(self.Y2bn, 'R2')
             self.L2 = tf.nn.max_pool(value=self.L2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 14x14 -> 7x7
             # self.L2 = tf.layers.dropout(inputs=self.L2, rate=self.dropout_rate, training=self.training)
 
@@ -171,8 +152,11 @@ class Model:
             self.W3 = tf.get_variable(name='W3', shape=[3, 3, 64, 128], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b3 = tf.Variable(tf.constant(value=0.001, shape=[128]), name='b3')
             self.L3 = tf.nn.conv2d(input=self.L2, filter=self.W3, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y3bn, self.update_ema3 = self.batch_norm(self.L3, self.training, self.iter, convolutional=True)
+
             # self.L3 = tf.nn.relu(self.L3, name='R3')
-            self.L3 = self.parametric_relu(self.L3, 'R3')
+            self.L3 = self.parametric_relu(self.Y3bn, 'R3')
             # self.L3 = tf.layers.dropout(inputs=self.L3, rate=self.dropout_rate, training=self.training)
             # self.L3 = tf.nn.max_pool(value=self.L3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')  # 7x7 -> 4x4
 
@@ -187,8 +171,12 @@ class Model:
             self.W4 = tf.get_variable(name='W4', shape=[3, 3, 128, 256], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b4 = tf.Variable(tf.constant(value=0.001, shape=[256]), name='b4')
             self.L4 = tf.nn.conv2d(input=self.L3, filter=self.W4, strides=[1, 1, 1, 1], padding='SAME')
+
+            self.Y4bn, self.update_ema4 = self.batch_norm(self.L4, self.training, self.iter, convolutional=True)
+
             # self.L4 = tf.nn.relu(self.L4, name='R4')
-            self.L4 = self.parametric_relu(self.L4, 'R4')
+
+            self.L4 = self.parametric_relu(self.Y4bn, 'R4')
             # self.L4 = tf.layers.dropout(inputs=self.L4, rate=self.dropout_rate, training=self.training)
             self.L4 = tf.reshape(self.L4, shape=[-1, 7 * 7 * 256])
 
@@ -201,9 +189,15 @@ class Model:
             ############################################################################################################
             self.W5 = tf.get_variable(name='W5', shape=[7 * 7 * 256, 625], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b5 = tf.Variable(tf.constant(value=0.001, shape=[625], name='b5'))
+
             # self.L5 = tf.nn.relu(tf.matmul(self.L4, self.W5) + self.b5, name='R5')
-            self.L5 = self.parametric_relu(tf.matmul(self.L4, self.W5) + self.b5, 'R5')
+            self.L5 = tf.matmul(self.L4, self.W5) + self.b5
+
+            self.Y5bn, self.update_ema5 = self.batch_norm(self.L5, self.training, self.iter)
+
+            self.L5 = self.parametric_relu(self.Y5bn, 'R5')
             self.L5 = tf.layers.dropout(inputs=self.L5, rate=self.dropout_rate, training=self.training)
+
 
             ############################################################################################################
             ## fully connected 계층 - 2
@@ -214,8 +208,13 @@ class Model:
             ############################################################################################################
             self.W6 = tf.get_variable(name='W6', shape=[625, 625], dtype=tf.float32, initializer=tf.contrib.layers.variance_scaling_initializer())
             self.b6 = tf.Variable(tf.constant(value=0.001, shape=[625], name='b6'))
+
             # self.L6 = tf.nn.relu(tf.matmul(self.L5, self.W6) + self.b6, name='R6')
-            self.L6 = self.parametric_relu(tf.matmul(self.L5, self.W6) + self.b6, 'R6')
+            self.L6 = tf.matmul(self.L5, self.W6) + self.b6
+
+            self.Y6bn, self.update_ema6 = self.batch_norm(self.L6, self.training, self.iter)
+
+            self.L6 = self.parametric_relu(self.Y6bn, 'R6')
             self.L6 = tf.layers.dropout(inputs=self.L6, rate=self.dropout_rate, training=self.training)
 
             ############################################################################################################
@@ -248,7 +247,7 @@ class Model:
         return pos + neg
 
 training_epochs = 20
-batch_size = 1000
+batch_size = 100
 
 mnist = input_data.read_data_sets('MNIST_data/', one_hot=True)
 
@@ -262,7 +261,7 @@ for m in range(num_models):
 sess.run(tf.global_variables_initializer())
 
 print('Learning Started!')
-tf.nn.batch_normalization()
+
 import time
 # 시작 시간 체크
 stime = time.time()
@@ -271,13 +270,13 @@ for epoch in range(training_epochs):
     avg_cost_list = np.zeros(len(models))
     total_batch = int(mnist.train.num_examples / batch_size)
 
-    for i in range(1,total_batch+1,5):
+    for i in range(1, total_batch+1, 5):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
         # 각각의 모델 훈련
         for idx, m in enumerate(models):
             c, a, _ = m.train(batch_xs, batch_ys)
             avg_cost_list[idx] += c / total_batch
-            print('accuracy: ', a)
+            # print('accuracy: ', a)
     print('Epoch: ', '%04d' % (epoch + 1), 'cost =', avg_cost_list)
 print('Learning Finished!')
 
