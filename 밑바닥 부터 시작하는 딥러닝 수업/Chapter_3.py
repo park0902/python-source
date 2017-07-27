@@ -560,3 +560,18 @@ proc = psutil.Process(os.getpid())
 mem = proc.memory_info()
 after_start = mem[0]
 print('memory use : ', after_start-before_start)
+
+
+
+import numpy as np
+
+def numerical_diff(f, x):
+    h = 1e-4
+
+    return(f(x+h) - f(x-h)) / (2*h)
+
+def function(x):
+
+    return 3*x**2 + 4*x
+
+print(numerical_diff(function, 7))
