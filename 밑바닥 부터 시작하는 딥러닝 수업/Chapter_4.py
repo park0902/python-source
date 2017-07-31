@@ -900,9 +900,3 @@ plt.show()
 
 
 
-
-
-
-import tensorflow as tf
-
-tf.train.ExponentialMovingAverage
