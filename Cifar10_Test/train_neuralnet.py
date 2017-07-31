@@ -30,11 +30,17 @@ network = TwoLayerNet(input_size=1024, hidden_size=50, output_size=10)
 
 epochs = 5
 batch_size = 100  # 배치 단위
-learning_rate = 0.1  # 학습률
+learning_rate = 0.001  # 학습률
 
 train_loss_list = []  # 매 배치마다 cost 값을 저장하는 리스트 변수
 train_acc_list = []  # 매 epoch 마다 train accuracy 를 저장하는 리스트 변수
 test_acc_list = []  # 매 epoch 마다 test accuracy 를 저장하는 리스트 변수
+
+m = None
+v = None
+beta1 = 0.9
+beta2 = 0.999
+iter = 0
 
 # 학습 시작
 print('Learning Started!')
@@ -48,8 +54,22 @@ for epoch in range(epochs):
 
             grad = network.gradient(train_x_batch, train_y_batch)  # 기울기 계산
 
+
+            # if m is None:
+            #     m, v = {}, {}
+            #     for key, val in network.params.items():
+            #         m[key] = np.zeros_like(val)
+            #         v[key] = np.zeros_like(val)
+            #
+            # iter += 1
+            # lr_t = learning_rate * np.sqrt(1.0 - beta2 ** iter) / (1.0 - beta1 ** iter)
+
             # Weight, Bias 갱신
             for key in network.params.keys():
+                # m[key] += (1 - beta1) * (grad[key] - m[key])
+                # v[key] += (1 - beta2) * (grad[key] ** 2 - v[key])
+                #
+                # network.params[key] -= lr_t * m[key] / (np.sqrt(v[key]) + 1e-7)
                 network.params[key] -= learning_rate * grad[key]
 
             loss = network.loss(train_x_batch, train_y_batch)  # 변경된 Weight, Bias 을 가지고 loss 구함
