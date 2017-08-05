@@ -108,6 +108,7 @@
 
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib import layers
 
 class Model:
     def __init__(self, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -127,21 +128,29 @@ class Model:
                 self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
             with tf.name_scope('LSTM'):
-                self.cell = tf.contrib.rnn.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
-                outputs, _states = tf.nn.dynamic_rnn(self.cell, self.X, dtype=tf.float32)
+                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
+                self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=0.5)
+                self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
+                outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
+                self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
+
+            with tf.name_scope('LSTM'):
+                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
+                self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, input_keep_prob=0.5)
+                self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
+                self.multi_cell = tf.nn.rnn_cell.DropoutWrapper(self.multi_cell, output_keep_prob=0.5)
+                outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
                 self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
 
 
-        self.loss = tf.reduce_sum(tf.square(self.Y_pred - self.Y))
+        self.flat = tf.reshape(outputs, [-1, self.n_hiddens])
+        self.logits = layers.linear(self.flat, self.n_inputs)
 
-        # optimizer
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
-        self.train = self.optimizer.minimize(self.loss)
 
-        # RMSE
-        self.targets = tf.placeholder(tf.float32, [None, 1])
-        self.predictions = tf.placeholder(tf.float32, [None, 1])
-        self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
+        self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.cost)
+        self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.arg_max(self.logits, 1), tf.arg_max(self.Y, 1)), dtype=tf.float32))
+        self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.Y, tf.cast(self.Y, tf.uint8)), dtype=tf.float32))
 
 
     def min_max_scaler(self, data):
@@ -161,52 +170,3 @@ class Model:
 
 
 
-
-batch_size = 100
-
-
-
-
-# train/test split
-train_size = int(len(dataY) * 0.7)
-test_size = len(dataY) - train_size
-trainX, testX = np.array(dataX[0:train_size]), np.array(
-    dataX[train_size:len(dataX)])
-trainY, testY = np.array(dataY[0:train_size]), np.array(
-    dataY[train_size:len(dataY)])
-
-
-
-with tf.Session() as sess:
-    init = tf.global_variables_initializer()
-    sess.run(init)
-
-    print('Learning Start!')
-
-    while True:
-        avg_cost_list = np.zeros(len(models))
-        # train_writer = tf.summary.FileWriter('./logs/train', sess.graph)
-        for index in range(0, len(train_file_list), 2):
-            total_x, total_y = read_data(train_file_list[index], train_file_list[index+1])
-            for start_idx in range(0, 2000, batch_size):
-                train_x_batch, train_y_batch = total_x[start_idx:start_idx+batch_size], total_y[start_idx:start_idx+batch_size]
-                for idx, m in enumerate(models):
-                    c, _ = m.train(train_x_batch, train_y_batch)
-                    avg_cost_list[idx] += c / batch_size
-                    # train_writer.add_summary(s)
-
-
-
-
-    # Training step
-    for i in range(iterations):
-        _, step_loss = sess.run([train, loss], feed_dict={
-                                X: trainX, Y: trainY})
-        print("[step: {}] loss: {}".format(i, step_loss))
-
-
-    # Test step
-    test_predict = sess.run(Y_pred, feed_dict={X: testX})
-    rmse_val = sess.run(rmse, feed_dict={
-                    targets: testY, predictions: test_predict})
-    print("RMSE: {}".format(rmse_val))
