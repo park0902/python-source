@@ -108,7 +108,7 @@
 
 import tensorflow as tf
 import numpy as np
-from tensorflow.contrib import layers
+from tensorflow.contrib import *
 
 class Model:
     def __init__(self, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -135,12 +135,25 @@ class Model:
                 self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
 
             with tf.name_scope('LSTM'):
-                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
-                self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, input_keep_prob=0.5)
+                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True,
+                                                         activation=tf.tanh)
+                self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=0.5)
                 self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
-                self.multi_cell = tf.nn.rnn_cell.DropoutWrapper(self.multi_cell, output_keep_prob=0.5)
                 outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
-                self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
+                self.FC = tf.reshape(outputs, [-1, self.n_hiddens])
+                self.outputs = tf.contrib.layers.fully_connected(self.FC, self.n_outputs, activation_fn=None)
+                self.outputs = tf.reshape(self.n_outputs, [None, self.n_sequences, self.n_outputs])
+
+                self.sequence_loss = tf.contrib.seq2seq.sequence_loss(logits=self.outputs, targets=self.Y)
+                self.loss = tf.reduce_mean(self.sequence_loss)
+
+            # with tf.name_scope('LSTM'):
+            #     self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
+            #     self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, input_keep_prob=0.5)
+            #     self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
+            #     self.multi_cell = tf.nn.rnn_cell.DropoutWrapper(self.multi_cell, output_keep_prob=0.5)
+            #     outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
+            #     self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
 
 
         self.flat = tf.reshape(outputs, [-1, self.n_hiddens])
