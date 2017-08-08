@@ -142,3 +142,4 @@ class ImageToCSV:
 
 crawler = ImageToCSV()
 crawler.img_to_csv()
+

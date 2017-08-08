@@ -139,3 +139,4 @@ def batch_norm(x, name_scope, training, epsilon=1e-3, decay=0.999):
             return tf.nn.batch_normalization(x, pop_mean, pop_var, offset, scale, epsilon)
 
         return tf.cond(training, batch_statistics, population_statistics)
+

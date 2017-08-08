@@ -2082,6 +2082,4 @@ def orthogonal(shape):
     return q.reshape(shape)
 
 
-orthogonal()
-
 
