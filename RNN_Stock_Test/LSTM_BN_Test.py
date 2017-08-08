@@ -1,8 +1,10 @@
 import os
+import re
+import time
 import numpy as np
 import tensorflow as tf
-import time
-import re
+from RNN_Stock_Test.LSTM_BN import BNLSTMCell
+
 
 class Model:
     def __init__(self, sess, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -25,7 +27,12 @@ class Model:
             self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
             self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
-            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.lstm_cell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+            # self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.lstm_cell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+            self.multi_cells = tf.contrib.rnn.MultiRNNCell([BNLSTMCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+
+            if self.training:
+                self.multi_cells = tf.contrib.rnn.DropoutWrapper(self.multi_cells, input_keep_prob=0.5)
+
             self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, dtype=tf.float32)
             self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
             self.Y_ = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
@@ -38,11 +45,11 @@ class Model:
             self.predictions = tf.placeholder(tf.float32, [None, 1])
             self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
-    def lstm_cell(self, hidden_size):
-        cell = tf.contrib.rnn.BasicLSTMCell(hidden_size, state_is_tuple=True)
-        if self.training:
-            cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
-        return cell
+    # def lstm_cell(self, hidden_size):
+    #     cell = tf.contrib.rnn.BasicLSTMCell(hidden_size, state_is_tuple=True)
+    #     if self.training:
+    #         cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
+    #     return cell
 
     def train(self, x_data, y_data):
         self.training = True
@@ -66,7 +73,7 @@ def min_max_scaler(data):
     return (data - np.min(data, axis=0))/(np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
 
 def read_data(file_name):
-    data = np.loadtxt('data/'+file_name, delimiter=',', skiprows=1)
+    data = np.loadtxt('D:\\bitcoin/'+file_name, delimiter=',', skiprows=1)
     data = data[:, 1:]
     data = data[np.sum(np.isnan(data), axis=1) == 0]
     data = min_max_scaler(data)
@@ -80,7 +87,7 @@ def read_data(file_name):
         dataY.append(_y)
     return dataX, dataY
 
-file_list = os.listdir('data/')
+file_list = os.listdir('D:\\bitcoin/')
 model_list = []
 
 batch_size = 100

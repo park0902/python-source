@@ -25,8 +25,7 @@ class Model:
             self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
             self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
-            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.gru_cell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=False)
-            # self.multi_cells = tf.contrib.rnn.DropoutWrapper(self.multi_cells, output_keep_prob=0.5)
+            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.lstm_cell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
             self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, dtype=tf.float32)
             self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
             self.Y_ = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
@@ -39,38 +38,11 @@ class Model:
             self.predictions = tf.placeholder(tf.float32, [None, 1])
             self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
-
-    def lstm_batch_norm(self, inputs, shape, is_training, epsilon=1e-3, decay=0.99):
-        scale = tf.Variable(tf.constant(1.0, shape=[shape]), trainable=True)
-        beta = tf.Variable(tf.constant(0.0, shape=[shape]), trainable=True)
-
-        population_mean = tf.get_variable('population_mean', [shape], trainable=False)
-        population_var = tf.get_variable('population_var', [shape], trainable=False)
-        batch_mean, batch_var = tf.nn.moments(inputs, [0])
-
-        train_mean_op = tf.assign(population_mean, population_mean * decay + batch_mean * (1 - decay))
-        train_var_op = tf.assign(population_var, population_var * decay + batch_var * (1 - decay))
-
-        if is_training is True:
-            with tf.control_dependencies([train_mean_op, train_var_op]):
-                return tf.nn.batch_normalization(inputs, batch_mean, batch_var, beta, scale, epsilon)
-        else:
-            return tf.nn.batch_normalization(inputs, population_mean, population_var, beta, scale, epsilon)
-
-
-    def gru_cell(self, hidden_size):
-       cell = tf.nn.rnn_cell.GRUCell(hidden_size, activation=None)
-       cell = self.lstm_batch_norm(cell, hidden_size, self.training, epsilon=1e-3, decay=0.99)
-       cell = tf.tanh(cell)
-       if self.training:
-           cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
-       return cell
-
-    # def gru_cell(self, hidden_size):
-    #     cell = tf.nn.rnn_cell.GRUCell(hidden_size, activation=tf.tanh)
-    #     if self.training is True:
-    #         cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
-    #     return cell
+    def lstm_cell(self, hidden_size):
+        cell = tf.contrib.rnn.BasicLSTMCell(hidden_size, state_is_tuple=True)
+        if self.training:
+            cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
+        return cell
 
     def train(self, x_data, y_data):
         self.training = True
@@ -85,13 +57,14 @@ class Model:
         return self.sess.run(self.rmse, feed_dict={self.targets: targets, self.predictions: predictions})
 
 n_inputs = 7
-n_sequences = 5
-n_hiddens = 2
+n_sequences = 10
+n_hiddens = 200
 n_outputs = 1
 hidden_layer_cnt = 5
 
 def min_max_scaler(data):
     return (data - np.min(data, axis=0))/(np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
+
 
 def read_data(file_name):
     data = np.loadtxt('D:\\bitcoin/'+file_name, delimiter=',', skiprows=1)
@@ -108,41 +81,11 @@ def read_data(file_name):
         dataY.append(_y)
     return dataX, dataY
 
-file_list = os.listdir('D:\\bitcoin')
+file_list = os.listdir('D:\\bitcoin/')
 model_list = []
 
 batch_size = 100
 epochs = 20
-
-
-
-
-
-
-# def lstm_batch_norm(inputs, name_scope, is_training, epsilon=1e-3, decay=0.99):
-#     with tf.variable_scope(name_scope):
-#         size = inputs.get_shape().as_list()[1]
-#
-#         scale = tf.get_variable('scale', [size], initializer=tf.constant_initializer(0.1))
-#         offset = tf.get_variable('offset', [size])
-#
-#         population_mean = tf.get_variable('population_mean', [size], initializer=tf.zeros_initializer, trainable=False)
-#         population_var = tf.get_variable('population_var', [size], initializer=tf.ones_initializer, trainable=False)
-#         batch_mean, batch_var = tf.nn.moments(inputs, [0])
-#
-#
-#         train_mean_op = tf.assign(population_mean, population_mean * decay + batch_mean * (1 - decay))
-#         train_var_op = tf.assign(population_var, population_var * decay + batch_var * (1 - decay))
-#
-#         if is_training is True:
-#             with tf.control_dependencies([train_mean_op, train_var_op]):
-#                 return tf.nn.batch_normalization(inputs, batch_mean, batch_var, offset, scale, epsilon)
-#         else:
-#             return tf.nn.batch_normalization(inputs, population_mean, population_var, offset, scale, epsilon)
-
-
-
-
 
 with tf.Session() as sess:
     for idx, file_name in enumerate(file_list):
