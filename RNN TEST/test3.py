@@ -109,6 +109,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.contrib import *
+import time
 
 class Model:
     def __init__(self, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -127,25 +128,24 @@ class Model:
                 self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
                 self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
-            with tf.name_scope('LSTM'):
-                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
+            with tf.name_scope('GRU'):
+                self.cell = tf.nn.rnn_cell.GRUCell(num_units=self.n_hiddens, activation=tf.tanh)
                 self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=0.5)
-                self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
+                self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt, state_is_tuple= False)
                 outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
                 self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
 
-            with tf.name_scope('LSTM'):
-                self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True,
-                                                         activation=tf.tanh)
-                self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=0.5)
-                self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
-                outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
-                self.FC = tf.reshape(outputs, [-1, self.n_hiddens])
-                self.outputs = tf.contrib.layers.fully_connected(self.FC, self.n_outputs, activation_fn=None)
-                self.outputs = tf.reshape(self.n_outputs, [None, self.n_sequences, self.n_outputs])
-
-                self.sequence_loss = tf.contrib.seq2seq.sequence_loss(logits=self.outputs, targets=self.Y)
-                self.loss = tf.reduce_mean(self.sequence_loss)
+            # with tf.name_scope('GRU'):
+            #     self.cell = tf.nn.rnn_cell.GRUCell(num_units=self.n_hiddens, activation=tf.tanh)
+            #     self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=0.5)
+            #     self.multi_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * self.hidden_layer_cnt)
+            #     outputs, _states = tf.nn.dynamic_rnn(self.multi_cell, self.X, dtype=tf.float32)
+            #     self.FC = tf.reshape(outputs, [-1, self.n_hiddens])
+            #     self.outputs = tf.contrib.layers.fully_connected(self.FC, self.n_outputs, activation_fn=None)
+            #     self.outputs = tf.reshape(self.n_outputs, [None, self.n_sequences, self.n_outputs])
+            #
+            #     self.sequence_loss = tf.contrib.seq2seq.sequence_loss(logits=self.outputs, targets=self.Y)
+            #     self.loss = tf.reduce_mean(self.sequence_loss)
 
             # with tf.name_scope('LSTM'):
             #     self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.n_hiddens, state_is_tuple=True, activation=tf.tanh)
@@ -156,30 +156,83 @@ class Model:
             #     self.Y_pred = tf.contrib.layers.fully_connected(outputs[:, -1], self.n_outputs, activation_fn=None)
 
 
-        self.flat = tf.reshape(outputs, [-1, self.n_hiddens])
-        self.logits = layers.linear(self.flat, self.n_inputs)
+        # self.flat = tf.reshape(outputs, [-1, self.n_hiddens])
+        # self.logits = layers.linear(self.flat, self.n_inputs)
+        #
+        #
+        # self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        # self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.cost)
+        # self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.arg_max(self.logits, 1), tf.arg_max(self.Y, 1)), dtype=tf.float32))
+        # # self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.Y, tf.cast(self.Y, tf.uint8)), dtype=tf.float32))
 
 
-        self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.cost)
-        self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.arg_max(self.logits, 1), tf.arg_max(self.Y, 1)), dtype=tf.float32))
-        self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.Y, tf.cast(self.Y, tf.uint8)), dtype=tf.float32))
+        self.loss = tf.reduce_sum(tf.square(self.Y_pred-self.Y))
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+        self.train = self.optimizer.minimize(self.loss)
 
 
-    def min_max_scaler(self, data):
-        return (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
+def min_max_scaler(data):
+    return (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
 
 
-    def read_data(self, file_name):
-        data = np.loadtxt('d:/data/' + file_name, delimiter=',', skiprows=1)
-        data = data[:, 1:]
-        data = data[np.sum(np.isnan(data), axis=1) == 0]
-        data = self.min_max_scaler(data)
-        return data, data[:, [3]]
+def read_data(file_name):
+    data = np.loadtxt('d:/data/' + file_name, delimiter=',', skiprows=1)
+    data = data[:, 1:]
+    data = data[np.sum(np.isnan(data), axis=1) == 0]
+    data = min_max_scaler(data)
+    # return data, data[:, [3]]
+    return data
+
+
+def data_setting(data, sequence_length):
+    dataX = []
+    dataY = []
+    x = data
+    y = data[:, [-3]]
+    for i in range(0, len(y)-sequence_length):
+        x = x[i:i+sequence_length]
+        y = y[i:i+sequence_length]
+        dataX.append(x)
+        dataY.append(y)
+    train_size = int(len(dataY)*0.7)
+    # test_size = len(dataY) - train_size
+    trainX, trainY = np.array(dataX[0:train_size]), np.array(dataY[0:train_size])
+    testX, testY = np.array(dataX[train_size:len(dataX)]), np.array(dataY[train_size:len(dataY)])
+    return trainX, trainY, testX, testY
 
 
 
-    # print(read_data('bitstampUSD_1-min_data_2012-01-01_to_2017-05-31.csv'))
+# print(read_data('bitstampUSD_1-min_data_2012-01-01_to_2017-05-31.csv'))
+
+file_names=['bitstampUSD_1-min_data_2012-01-01_to_2017-05-31.csv']
+
+batch_size = 1000
+n_inputs = 7
+n_sequences = 60
+n_hiddens = 100
+n_outputs = 1
+hidden_layer_cnt = 5
+iterations = 1000
+
+model = Model(batch_size,n_sequences,n_hiddens,n_outputs,hidden_layer_cnt,file_name=file_names[0],model_name='RNN')
+data = read_data(file_names[0])
+
+trainX, trainY, testX, testY = data_setting(data, n_sequences)
+
+with tf.Session() as sess:
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    # Training step
+    for i in range(iterations):
+        _, step_loss = sess.run([train, loss], feed_dict={
+                                X: trainX, Y: trainY})
+        print("[step: {}] loss: {}".format(i, step_loss))
 
 
+    # Test step
+    test_predict = sess.run(Y_pred, feed_dict={X: testX})
+    rmse_val = sess.run(rmse, feed_dict={
+                    targets: testY, predictions: test_predict})
 
+    print("RMSE: {}".format(rmse_val))

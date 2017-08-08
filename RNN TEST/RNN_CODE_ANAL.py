@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import pprint as pp
-from tensorflow.contrib.rnn import *
 '''
 one hot encoding
 h = [1,0,0,0]
@@ -166,3 +165,18 @@ with tf.Session() as sess:
 
         # result_str = [idx2char[c] for c in np.squeeze(result)]
         # print("\tPrediction str : ", ''.join(result_str))
+
+
+
+
+
+
+import os
+
+file_list = os.listdir('data/')
+
+print(file_list)
+
+
+
+
