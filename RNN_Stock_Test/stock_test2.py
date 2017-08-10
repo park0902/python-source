@@ -1,9 +1,10 @@
+
 import os
-import re
-import time
 import numpy as np
 import tensorflow as tf
-from RNN_Stock_Test.LSTM_BN import BNLSTMCell
+import time
+import re
+from Project_Git.DeepLearningProject.p03_rnn_stock_prediction.Test import BNlstm
 
 class Model:
     def __init__(self, sess, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -20,34 +21,30 @@ class Model:
         self._build_net()
 
     def _build_net(self):
-        with tf.variable_scope(self.model_name):
-            self.learning_rate = 0.001
+        # with tf.device('/gpu:0'):
+            with tf.variable_scope(self.model_name):
+                self.learning_rate = 0.001
 
-            self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
-            self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
+                self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
+                self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
-            # self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.lstm_cell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
-            self.multi_cells = tf.contrib.rnn.MultiRNNCell([BNLSTMCell(self.n_hiddens, training=True) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
-            # self.multi_cells = tf.contrib.rnn.MultiRNNCell([BNLSTMCell(self.n_hiddens, training=True) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+                self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.BNlstmCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+                self.state_init = self.multi_cells.zero_state(batch_size, dtype=tf.float32)
+                self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, initial_state=self.state_init, dtype=tf.float32)
+                self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
+                self.Y_ = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
 
-            # if self.training is True:
-            #     self.multi_cells = tf.contrib.rnn.DropoutWrapper(self.multi_cells, input_keep_prob=0.5)
+                self.reg_loss = tf.reduce_sum([self.regularizer(train_var) for train_var in tf.trainable_variables() if re.search('(kernel)|(weights)', train_var.name) is not None])
+                self.loss = tf.reduce_sum(tf.square(self.Y_ - self.Y)) + self.reg_loss
+                self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
-            self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, dtype=tf.float32)
-            self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
-            self.Y_ = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
+                self.targets = tf.placeholder(tf.float32, [None, 1])
+                self.predictions = tf.placeholder(tf.float32, [None, 1])
+                self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
-            self.reg_loss = tf.reduce_sum([self.regularizer(train_var) for train_var in tf.trainable_variables() if re.search('(kernel)|(weights)', train_var.name) is not None])
-            self.loss = tf.reduce_sum(tf.square(self.Y_ - self.Y)) + self.reg_loss
-            self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
-
-            self.targets = tf.placeholder(tf.float32, [None, 1])
-            self.predictions = tf.placeholder(tf.float32, [None, 1])
-            self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
-
-    def lstm_cell(self, hidden_size):
-        cell = tf.contrib.rnn.BasicLSTMCell(hidden_size, state_is_tuple=True)
-        if self.training:
+    def BNlstmCell(self, hidden_size):
+        cell = BNlstm.BNLSTMCell(hidden_size, self.training)
+        if self.training is True:
             cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
         return cell
 
@@ -65,7 +62,7 @@ class Model:
 
 n_inputs = 7
 n_sequences = 10
-n_hiddens = 100
+n_hiddens = 10
 n_outputs = 1
 hidden_layer_cnt = 2
 
@@ -87,11 +84,12 @@ def read_data(file_name):
         dataY.append(_y)
     return dataX, dataY
 
-file_list = os.listdir('D:\\bitcoin/')
+file_list = os.listdir(r'D:\\bitcoin/')
 model_list = []
 
 batch_size = 100
 epochs = 20
+
 
 with tf.Session() as sess:
     for idx, file_name in enumerate(file_list):
@@ -134,8 +132,3 @@ with tf.Session() as sess:
         print('Model :', model.model_name, ', rmse :', test_rmse)
         print(model.model_name, ', testing end -')
         print(model.model_name, ', time -', etime-stime, '\n')
-
-
-
-
-

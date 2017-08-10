@@ -10,7 +10,7 @@ class ImageToCSV:
     __IMAGE_PATH = 'img\\'
     __RESIZED_IMAGE_PATH = __IMAGE_PATH + 'resized\\'
     __DATA_PATH = 'csv\\'
-    __LABEL_PATH = 'xray_labels.csv'
+    __LABEL_PATH = 'cat_labels.csv'
 
     def __init__(self):
         self.__image_data = []  # 이미지가 Gray Scale 로 변환된 데이터.
@@ -18,8 +18,10 @@ class ImageToCSV:
         self.__rgb_cnt = 0
         self.__train_labels = self._setLabel()
         self.__labels = {
-            'patient': 1,
-            'normal': 2
+            # 'patient': 1,
+            # 'normal': 2
+            'cat' : 1,
+            'dog': 2
         }
 
     def _setLabel(self):

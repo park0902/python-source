@@ -52,8 +52,6 @@ class BNLSTMCell(RNNCell):
     @property
     def state_size(self):
         return (self.num_units, self.num_units)
-
-    @property
     def output_size(self):
         return self.num_units
 

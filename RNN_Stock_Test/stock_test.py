@@ -58,9 +58,9 @@ class Model:
 
 n_inputs = 7
 n_sequences = 10
-n_hiddens = 200
+n_hiddens = 10
 n_outputs = 1
-hidden_layer_cnt = 5
+hidden_layer_cnt = 3
 
 def min_max_scaler(data):
     return (data - np.min(data, axis=0))/(np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
