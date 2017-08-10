@@ -1,10 +1,9 @@
-
 import os
 import numpy as np
 import tensorflow as tf
 import time
 import re
-from RNN_Stock_Test import LSTM_BN2
+from RNN_Stock_Test import LSTM_BN as bn
 
 class Model:
     def __init__(self, sess, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -21,56 +20,56 @@ class Model:
         self._build_net()
 
     def _build_net(self):
-        with tf.device('/gpu:0'):
-            with tf.variable_scope(self.model_name):
-                self.learning_rate = 0.001
+        with tf.variable_scope(self.model_name):
+            self.learning_rate = 0.001
 
-                self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
-                self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
+            self.X = tf.placeholder(tf.float32, [None, self.n_sequences, self.n_inputs])
+            self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
-                self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.BNlstmCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
-                self.state_init = self.multi_cells.zero_state(batch_size, dtype=tf.float32)
-                self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, initial_state=self.state_init, dtype=tf.float32)
-                self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
-                self.Y_ = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
 
-                self.reg_loss = tf.reduce_sum([self.regularizer(train_var) for train_var in tf.trainable_variables() if re.search('(kernel)|(weights)', train_var.name) is not None])
-                self.loss = tf.reduce_sum(tf.square(self.Y_ - self.Y)) + self.reg_loss
-                self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.BNlstmCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+            self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, dtype=tf.float32)
 
-                self.targets = tf.placeholder(tf.float32, [None, 1])
-                self.predictions = tf.placeholder(tf.float32, [None, 1])
-                self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
+            self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
+            self.fc_2 = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
+
+            # self.reg_loss = tf.add_n([tf.nn.l2_loss(self.W_out)])
+            self.loss = tf.reduce_sum(tf.square(self.fc_2 - self.Y))
+            self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+
+            self.targets = tf.placeholder(tf.float32, [None, 1])
+            self.predictions = tf.placeholder(tf.float32, [None, 1])
+            self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
     def BNlstmCell(self, hidden_size):
-        cell = LSTM_BN2.BNLSTMCell(hidden_size, self.training)
+        cell = bn.BNLSTMCell(hidden_size, self.training)
         if self.training is True:
             cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
         return cell
 
     def train(self, x_data, y_data):
         self.training = True
-        return self.sess.run([self.reg_loss, self.loss, self.optimizer], feed_dict={self.X: x_data, self.Y: y_data})
+        return self.sess.run([self.loss, self.optimizer], feed_dict={self.X: x_data, self.Y: y_data})
 
     def predict(self, x_data):
         self.training = False
-        return self.sess.run(self.Y_, feed_dict={self.X: x_data})
+        return self.sess.run(self.fc_2, feed_dict={self.X: x_data})
 
     def rmse_predict(self, targets, predictions):
         self.training = False
         return self.sess.run(self.rmse, feed_dict={self.targets: targets, self.predictions: predictions})
 
 n_inputs = 7
-n_sequences = 60
-n_hiddens = 100
+n_sequences = 5
+n_hiddens = 2
 n_outputs = 1
-hidden_layer_cnt = 5
+hidden_layer_cnt = 1
 
 def min_max_scaler(data):
     return (data - np.min(data, axis=0))/(np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
 
 def read_data(file_name):
-    data = np.loadtxt('F:\\Py_Tensor_Virtual\\Project_Git\\DeepLearningProject\\p03_rnn_stock_prediction\\Test\\data\\'+file_name, delimiter=',', skiprows=1)
+    data = np.loadtxt('D:\\bitcoin/'+file_name, delimiter=',', skiprows=1)
     data = data[:, 1:]
     data = data[np.sum(np.isnan(data), axis=1) == 0]
     data = min_max_scaler(data)
@@ -84,11 +83,11 @@ def read_data(file_name):
         dataY.append(_y)
     return dataX, dataY
 
-file_list = os.listdir(r'F:\Py_Tensor_Virtual\Project_Git\DeepLearningProject\p03_rnn_stock_prediction\Test\data/')
+file_list = os.listdir(r'D:\\bitcoin/')
 model_list = []
 
 batch_size = 100
-epochs = 20
+epochs = 5
 
 
 with tf.Session() as sess:
@@ -112,9 +111,11 @@ with tf.Session() as sess:
             for idx in range(0, train_len, batch_size):
                 sample_size = train_len if batch_size > train_len else batch_size
                 batch_X, batch_Y = train_X[idx: idx+sample_size], train_Y[idx: idx+sample_size]
-                reg_loss, loss, _ = model.train(batch_X, batch_Y)
+                loss, _ = model.train(batch_X, batch_Y)
                 train_loss += loss / sample_size
                 train_len -= sample_size
+                if idx % 500000 == 0:
+                    print('train {} loss {} complete'.format(idx,train_loss) )
             print('Model :', model.model_name, ', epoch :', epoch+1, ', loss :', train_loss)
             train_len, test_len = len(train_Y), len(test_Y)
         print(model.model_name, ', training end -\n')
@@ -126,7 +127,7 @@ with tf.Session() as sess:
             batch_X, batch_Y = test_X[idx: idx + sample_size], test_Y[idx: idx + sample_size]
             predicts = model.predict(batch_X)
             rmse = model.rmse_predict(batch_Y, predicts)
-            test_rmse += rmse / sample_size
+            test_rmse += loss / sample_size
             test_len -= sample_size
         etime = time.time()
         print('Model :', model.model_name, ', rmse :', test_rmse)

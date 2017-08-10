@@ -57,10 +57,10 @@ class Model:
         return self.sess.run(self.rmse, feed_dict={self.targets: targets, self.predictions: predictions})
 
 n_inputs = 7
-n_sequences = 10
-n_hiddens = 10
+n_sequences = 5
+n_hiddens = 2
 n_outputs = 1
-hidden_layer_cnt = 3
+hidden_layer_cnt = 1
 
 def min_max_scaler(data):
     return (data - np.min(data, axis=0))/(np.max(data, axis=0) - np.min(data, axis=0) + 1e-5)
@@ -84,8 +84,8 @@ def read_data(file_name):
 file_list = os.listdir('D:\\bitcoin/')
 model_list = []
 
-batch_size = 100
-epochs = 20
+batch_size = 1000
+epochs = 5
 
 with tf.Session() as sess:
     for idx, file_name in enumerate(file_list):
