@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import RNNCell
 from tensorflow.contrib.layers import batch_norm, variance_scaling_initializer
+from tensorflow.python.ops import math_ops
 
 class LSTMCell(RNNCell):
     '''Vanilla LSTM implemented with same initializations as BN-LSTM'''
@@ -35,16 +36,16 @@ class LSTMCell(RNNCell):
             new_h = tf.nn.softsign(new_c) * tf.sigmoid(o)
             return new_h, (new_c, new_h)
 
+
 class BNLSTMCell(RNNCell):
     '''Batch normalized LSTM as described in arxiv.org/abs/1603.09025'''
-
     def __init__(self, num_units, training):
         self.num_units = num_units
         self.training = training
 
     @property
     def state_size(self):
-        return (self.num_units, self.num_units)
+        return (self.num_units)
 
     @property
     def output_size(self):
@@ -54,10 +55,9 @@ class BNLSTMCell(RNNCell):
         with tf.variable_scope(scope or type(self).__name__):
             c, h = state
             x_size = x.get_shape().as_list()[1]
-            W_xh = tf.get_variable('W_xh', [x_size, 4 * self.num_units], initializer=variance_scaling_initializer())
-
-            W_hh = tf.get_variable('W_hh', [self.num_units, 4 * self.num_units], initializer=variance_scaling_initializer())
-            bias = tf.get_variable('bias', [4 * self.num_units])
+            W_xh = tf.get_variable('W_xh', [x_size, 2 * self.num_units], initializer=variance_scaling_initializer())
+            W_hh = tf.get_variable('W_hh', [self.num_units, 2 * self.num_units], initializer=variance_scaling_initializer())
+            bias = tf.get_variable('bias', [2 * self.num_units], initializer=tf.constant(1.0))
 
             xh = tf.matmul(x, W_xh)
             hh = tf.matmul(h, W_hh)
@@ -65,14 +65,13 @@ class BNLSTMCell(RNNCell):
             bn_hh = bn_rnn(hh, 'hh', self.training)
             hidden = bn_xh + bn_hh + bias
 
-            i, g, f, o = tf.split(hidden, 4, 1)
+            u, r = tf.split(hidden, 2, 1)
 
-            new_c = c * tf.sigmoid(f) + tf.sigmoid(i) * tf.tanh(g)
-            bn_new_c = bn_rnn(new_c, 'c', self.training)
-            new_h = tf.nn.softsign(bn_new_c) * tf.sigmoid(o)
+            h_ = tf.nn.tanh(xh + tf.nn.sigmoid(r) )
+
             # new_h -> 활성화함수(input) * o
 
-            return new_h, (new_c, new_h)
+            # return new_h, (new_c, new_h)
 
 def bn_rnn(x, name_scope, training, epsilon=1e-3, decay=0.999):
     '''Assume 2d [batch, values] tensor'''
