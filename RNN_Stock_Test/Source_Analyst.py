@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import time
 import re
-from RNN_Stock_Test import LSTM_BN as bn
+from RNN_Stock_Test import GRU_BN as bn
 
 class Model:
     def __init__(self, sess, n_inputs, n_sequences, n_hiddens, n_outputs, hidden_layer_cnt, file_name, model_name):
@@ -27,22 +27,37 @@ class Model:
             self.Y = tf.placeholder(tf.float32, [None, self.n_outputs])
 
 
-            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.BNlstmCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=True)
+            self.multi_cells = tf.contrib.rnn.MultiRNNCell([self.BNlstmCell(self.n_hiddens) for _ in range(self.hidden_layer_cnt)], state_is_tuple=False)
             self.outputs, _states = tf.nn.dynamic_rnn(self.multi_cells, self.X, dtype=tf.float32)
 
             self.fc_1 = tf.contrib.layers.fully_connected(self.outputs[:, -1], 250, activation_fn=None)
             self.fc_2 = tf.contrib.layers.fully_connected(self.fc_1, self.n_outputs, activation_fn=None)
 
             # self.reg_loss = tf.add_n([tf.nn.l2_loss(self.W_out)])
-            self.loss = tf.reduce_sum(tf.square(self.fc_2 - self.Y))
+
+
+
+            # self.loss = tf.reduce_sum(tf.square(self.fc_2 - self.Y))
+            self.reg_loss = tf.reduce_sum([self.regularizer(train_var) for train_var in tf.trainable_variables() if
+                                           re.search('(kernel)|(weights)', train_var.name) is not None])
+            self.loss = self.Huber_loss(tf.reduce_sum(tf.square(self.fc_2 - self.Y))) + self.reg_loss
+
+
             self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
             self.targets = tf.placeholder(tf.float32, [None, 1])
             self.predictions = tf.placeholder(tf.float32, [None, 1])
             self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
+
+
+
+    def Huber_loss(self, input):
+        return tf.where(tf.abs(input) <= 1.0, 0.5 * tf.square(input), tf.abs(input) - 0.5)
+
+
     def BNlstmCell(self, hidden_size):
-        cell = bn.BNLSTMCell(hidden_size, self.training)
+        cell = bn.BNGRUCell(hidden_size, self.training)
         if self.training is True:
             cell = tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=0.5)
         return cell
@@ -58,7 +73,7 @@ class Model:
     def rmse_predict(self, targets, predictions):
         self.training = False
         return self.sess.run(self.rmse, feed_dict={self.targets: targets, self.predictions: predictions})
-
+import drawnow
 n_inputs = 7
 n_sequences = 5
 n_hiddens = 2
@@ -86,8 +101,8 @@ def read_data(file_name):
 file_list = os.listdir(r'D:\\bitcoin/')
 model_list = []
 
-batch_size = 100
-epochs = 5
+batch_size = 1000
+epochs = 20
 
 
 with tf.Session() as sess:

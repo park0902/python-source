@@ -471,3 +471,87 @@ for i in range(1000):
 test_x, test_y = mnist.test.next_batch(1000)
 print("test accuracy %g"% sess.run(
         accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+
+
+
+
+
+
+
+
+# 다중 신경망 구현
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+import tensorflow as tf
+
+x = tf.placeholder(dtype=tf.float32, shape=[None, 784], name='input')
+y = tf.placeholder(dtype=tf.float32, shape=[None, 10], name='output')
+lr = tf.placeholder(dtype=tf.bool, name='learning_rate')
+dropout = tf.Variable(tf.constant(0.5), name='dropout')
+with tf.variable_scope('model'):
+    with tf.name_scope('Layer1') as scope:
+        w1 = tf.get_variable(name='weight1', shape=[784, 800], dtype=tf.float32,
+                             initializer=tf.contrib.layers.variance_scaling_initializer())
+        b1 = tf.Variable(tf.constant(0.001, shape=[800]), name='b1')
+        L_fn1 = tf.nn.xw_plus_b(x=x, weights=w1, biases=b1, name='fnLayer1')
+        L_fn1 = tf.nn.relu(L_fn1, name='fn1_Relu')
+        L_fn1 = tf.layers.dropout(inputs=L_fn1, rate=dropout, training=lr)
+
+    with tf.name_scope('Layer2') as scope:
+        w2 = tf.get_variable(name='weight2', shape=[800, 800], dtype=tf.float32,
+                             initializer=tf.contrib.layers.variance_scaling_initializer())
+        b2 = tf.Variable(tf.constant(0.001, shape=[800]), name='b2')
+        L_fn2 = tf.nn.xw_plus_b(x=L_fn1, weights=w2, biases=b2, name='fnLayer2')
+        L_fn2 = tf.nn.relu(L_fn2, name='fn2_Relu')
+        L_fn2 = tf.layers.dropout(inputs=L_fn2, rate=dropout, training=lr)
+
+    w_out = tf.get_variable(name='w_out', shape=[800, 10], dtype=tf.float32,
+                            initializer=tf.contrib.layers.variance_scaling_initializer())
+    b_out = tf.Variable(tf.constant(0.001, shape=[10]), name='b_out')
+
+    logits = tf.nn.xw_plus_b(x=L_fn2, weights=w_out, biases=b_out, name='logits')
+    loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits)
+
+    # todo Adam
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss)
+
+    # todo Adagrad
+    # optimizer = tf.train.AdagradOptimizer(learning_rate=0.001).minimize(loss)
+
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+for i in range(1000):
+    batch_x, batch_y = mnist.train.next_batch(100)
+    sess.run([loss, optimizer], feed_dict={x: batch_x, y: batch_y, lr: True})
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(y, 1), tf.argmax(logits, 1)), dtype=tf.float32))
+    if i % 100 == 0:
+        print(sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, lr: False}))
+
+
+
+# todo 결과
+# Adam
+# 0.2239
+# 0.9249
+# 0.9353
+# 0.9487
+# 0.9578
+# 0.9573
+# 0.9614
+# 0.9653
+# 0.9675
+# 0.9708
+
+
+# Adagrad
+# 0.1642
+# 0.8692
+# 0.8906
+# 0.9029
+# 0.9078
+# 0.9127
+# 0.9157
+# 0.9183
+# 0.92
+# 0.9227
