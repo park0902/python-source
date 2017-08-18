@@ -41,6 +41,7 @@ class RNN_Model:
             self.predictions = tf.placeholder(tf.float32, [None, 1])
             self.rmse = tf.sqrt(tf.reduce_mean(tf.square(self.targets - self.predictions)))
 
+
     def BNGRUCell(self, hidden_size):
         cell = bn.BNGRUCell(hidden_size, self.training)
         if self.training is True:
@@ -172,9 +173,9 @@ def read_data(file_name):
 
 n_inputs = 7
 n_sequences = 10
-n_hiddens = 2
+n_hiddens = 7
 n_outputs = 1
-hidden_layer_cnt = 1
+hidden_layer_cnt = 3
 
 
 file_list = os.listdir(r'D:\\bitcoin/')

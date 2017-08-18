@@ -283,48 +283,135 @@
 # print("test accuracy %g"% sess.run(
 #         accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
 
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-import tensorflow as tf
 
-x = tf.placeholder(dtype=tf.float32, shape=[None, 784], name='input')
-y = tf.placeholder(dtype=tf.float32, shape=[None, 10], name='output')
-lr = tf.placeholder(dtype=tf.bool, name='learning_rate')
-dropout = tf.Variable(tf.constant(0.5), name='dropout')
-with tf.variable_scope('model'):
-    with tf.name_scope('Layer1') as scope:
-        w1 = tf.get_variable(name='weight1', shape=[784, 800], dtype=tf.float32,
-                             initializer=tf.contrib.layers.variance_scaling_initializer())
-        b1 = tf.Variable(tf.constant(0.001, shape=[800]), name='b1')
-        L_fn1 = tf.nn.xw_plus_b(x=x, weights=w1, biases=b1, name='fnLayer1')
-        L_fn1 = tf.nn.relu(L_fn1, name='fn1_Relu')
-        L_fn1 = tf.layers.dropout(inputs=L_fn1, rate=dropout, training=lr)
 
-    with tf.name_scope('Layer2') as scope:
-        w2 = tf.get_variable(name='weight2', shape=[800, 800], dtype=tf.float32,
-                             initializer=tf.contrib.layers.variance_scaling_initializer())
-        b2 = tf.Variable(tf.constant(0.001, shape=[800]), name='b2')
-        L_fn2 = tf.nn.xw_plus_b(x=L_fn1, weights=w2, biases=b2, name='fnLayer2')
-        L_fn2 = tf.nn.relu(L_fn2, name='fn2_Relu')
-        L_fn2 = tf.layers.dropout(inputs=L_fn2, rate=dropout, training=lr)
 
-    w_out = tf.get_variable(name='w_out', shape=[800, 10], dtype=tf.float32,
-                            initializer=tf.contrib.layers.variance_scaling_initializer())
-    b_out = tf.Variable(tf.constant(0.001, shape=[10]), name='b_out')
 
-    logits = tf.nn.xw_plus_b(x=L_fn2, weights=w_out, biases=b_out, name='logits')
-    loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss)
-    # optimizer = tf.train.AdagradOptimizer(learning_rate=0.001).minimize(loss)
 
-sess = tf.Session()
-sess.run(tf.global_variables_initializer())
 
-for i in range(1000):
-    batch_x, batch_y = mnist.train.next_batch(100)
-    sess.run([loss, optimizer], feed_dict={x: batch_x, y: batch_y, lr: True})
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(y, 1), tf.argmax(logits, 1)), dtype=tf.float32))
-    if i % 100 == 0:
-        print(sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, lr: False}))
 
+
+# from tensorflow.examples.tutorials.mnist import input_data
+# mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+# import tensorflow as tf
+#
+# x = tf.placeholder(dtype=tf.float32, shape=[None, 784], name='input')
+# y = tf.placeholder(dtype=tf.float32, shape=[None, 10], name='output')
+# lr = tf.placeholder(dtype=tf.bool, name='learning_rate')
+# dropout = tf.Variable(tf.constant(0.5), name='dropout')
+# with tf.variable_scope('model'):
+#     with tf.name_scope('Layer1') as scope:
+#         w1 = tf.get_variable(name='weight1', shape=[784, 800], dtype=tf.float32,
+#                              initializer=tf.contrib.layers.variance_scaling_initializer())
+#         b1 = tf.Variable(tf.constant(0.001, shape=[800]), name='b1')
+#         L_fn1 = tf.nn.xw_plus_b(x=x, weights=w1, biases=b1, name='fnLayer1')
+#         L_fn1 = tf.nn.relu(L_fn1, name='fn1_Relu')
+#         L_fn1 = tf.layers.dropout(inputs=L_fn1, rate=dropout, training=lr)
+#
+#     with tf.name_scope('Layer2') as scope:
+#         w2 = tf.get_variable(name='weight2', shape=[800, 800], dtype=tf.float32,
+#                              initializer=tf.contrib.layers.variance_scaling_initializer())
+#         b2 = tf.Variable(tf.constant(0.001, shape=[800]), name='b2')
+#         L_fn2 = tf.nn.xw_plus_b(x=L_fn1, weights=w2, biases=b2, name='fnLayer2')
+#         L_fn2 = tf.nn.relu(L_fn2, name='fn2_Relu')
+#         L_fn2 = tf.layers.dropout(inputs=L_fn2, rate=dropout, training=lr)
+#
+#     w_out = tf.get_variable(name='w_out', shape=[800, 10], dtype=tf.float32,
+#                             initializer=tf.contrib.layers.variance_scaling_initializer())
+#     b_out = tf.Variable(tf.constant(0.001, shape=[10]), name='b_out')
+#
+#     logits = tf.nn.xw_plus_b(x=L_fn2, weights=w_out, biases=b_out, name='logits')
+#     loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits)
+#
+#     optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss)
+#     # optimizer = tf.train.AdagradOptimizer(learning_rate=0.001).minimize(loss)
+#
+# sess = tf.Session()
+# sess.run(tf.global_variables_initializer())
+#
+# for i in range(1000):
+#     batch_x, batch_y = mnist.train.next_batch(100)
+#     sess.run([loss, optimizer], feed_dict={x: batch_x, y: batch_y, lr: True})
+#     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(y, 1), tf.argmax(logits, 1)), dtype=tf.float32))
+#     if i % 100 == 0:
+#         print(sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, lr: False}))
+
+
+
+# from drawnow import *
+# import matplotlib.pyplot as plt
+#
+# epoch = 0
+# num_models = 5
+# avg_cost_list= [0.97428163,  0.96508989,  0.95383039,  0.92952114,  0.9528584]
+# a = [0.59251998,  0.59289574,  0.58628215,  0.56229065,  0.59824759]
+# b = [0.43249835,  0.4143347,   0.42900669,  0.40865832,  0.44832776]
+# c = [0.30988309,  0.30413569,  0.31177941,  0.27589372,  0.33025495]
+# d = [0.2273649,   0.22941697,  0.22509591,  0.2161353,   0.24048379]
+#
+#
+#
+#
+# # monitoring 관련 parameter
+# mon_epoch_list = []
+# mon_cost_list = [[] for m in range(num_models)]
+# mon_color_list = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black']
+# mon_label_list = ['model'+str(m+1) for m in range(num_models)]
+#
+#
+# # update 할 그래프 생성 함수
+# def monitor_train_cost():
+#     for cost, color, label in zip(mon_cost_list, mon_color_list[0:len(mon_label_list)], mon_label_list):
+#         plt.plot(mon_epoch_list, cost, c=color, lw=2, ls="--", marker="o", label=label)
+#     plt.title('Epoch per Cost Graph')
+#     plt.legend(loc=1)
+#     plt.xlabel('Epoch')
+#     plt.ylabel('Cost')
+#     plt.grid(True)
+#
+#
+# for i in range(1):
+#     mon_epoch_list.append(epoch + 1)
+#     for idx, cost in enumerate(avg_cost_list):
+#         mon_cost_list[idx].append(cost)
+#
+#     mon_epoch_list.append(2)
+#     for idx, cost in enumerate(a):
+#         mon_cost_list[idx].append(cost)
+#
+#     mon_epoch_list.append(3)
+#     for idx, cost in enumerate(b):
+#         mon_cost_list[idx].append(cost)
+#
+#     mon_epoch_list.append(4)
+#     for idx, cost in enumerate(c):
+#         mon_cost_list[idx].append(cost)
+#
+#     mon_epoch_list.append(5)
+#     for idx, cost in enumerate(d):
+#         mon_cost_list[idx].append(cost)
+#
+#     drawnow(monitor_train_cost)
+
+
+
+
+
+import matplotlib.pyplot as plt
+from drawnow import drawnow
+import numpy as np
+
+def makeFig():
+    plt.plot(xList,yList)
+
+
+xList = list()
+yList = list()
+
+for i in range(50):
+    y = np.random.random()
+    xList.append(i)
+    yList.append(y)
+    drawnow(makeFig)
+    plt.pause(0.001)

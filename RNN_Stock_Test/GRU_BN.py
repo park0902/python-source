@@ -46,23 +46,27 @@ class BNGRUCell(RNNCell):
 
             u, r = tf.split(hidden, 2, 1)
 
+            # r_ = tf.nn.sigmoid(r) * ish
             r_ = tf.nn.sigmoid(r) * bn_ish
+            # r_ = tf.nn.softsign(r) * bn_ish
 
             # todo tanh
             # h_ = tf.nn.tanh(bn_rnn(r_ + bn_ixh + ixs_bias, 'bn_h', self.training))    # tanh bn O, 편향 O
-            # h_ = tf.nn.tanh(bn_rnn(r_ + bn_ixh , 'bn_h', self.training))              # tanh bn O, 편향 X
+            # h_ = tf.nn.tanh(bn_rnn(r_ + ixh , 'bn_h', self.training))                 # tanh bn O, 편향 X
+            h_ = tf.nn.tanh(bn_rnn(r_ + bn_ixh, 'bn_h', self.training))                 # tanh bn O, 편향 X
             # h_ = tf.nn.tanh(r_ + bn_ixh + ixs_bias)                                   # tanh bn X, 편향 O
             # h_ = tf.nn.tanh(r_ + bn_ixh)                                              # tanh bn X, 편향 X
 
 
             # todo softsign
             # h_ = tf.nn.softsign(bn_rnn(r_ + bn_ixh + ixs_bias, 'bn_h', self.training))      # tanh bn O, 편향 O
-            # h_ = tf.nn.softsign(bn_rnn(r_ + bn_ixh , 'bn_h', self.training))                # tanh bn O, 편향 X
+            # h_ = tf.nn.softsign(bn_rnn(r_ + ixh , 'bn_h', self.training))                # tanh bn O, 편향 X
             # h_ = tf.nn.softsign(r_ + bn_ixh + ixs_bias)                                     # tanh bn X, 편향 O
-            h_ = tf.nn.softsign(r_ + bn_ixh)                                                # tanh bn X, 편향 X
+            # h_ = tf.nn.softsign(r_ + bn_ixh)                                                # tanh bn X, 편향 X
 
 
             new_h = tf.nn.sigmoid(u) * h_ + (1 - tf.nn.sigmoid(u)) * state          # 논문 O
+            # new_h = tf.nn.softsign(u) * h_ + (1 - tf.nn.softsign(u)) * state  # 논문 O
             # new_h = tf.nn.sigmoid(u) * state + (1 - tf.nn.sigmoid(u)) * h_        # 논문 X
 
             # 보류 -> BN(h_) 테스트.
