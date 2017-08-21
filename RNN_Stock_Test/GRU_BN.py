@@ -69,7 +69,6 @@ class BNGRUCell(RNNCell):
             # new_h = tf.nn.softsign(u) * h_ + (1 - tf.nn.softsign(u)) * state  # 논문 O
             # new_h = tf.nn.sigmoid(u) * state + (1 - tf.nn.sigmoid(u)) * h_        # 논문 X
 
-            # 보류 -> BN(h_) 테스트.
 
             return new_h, new_h
 
