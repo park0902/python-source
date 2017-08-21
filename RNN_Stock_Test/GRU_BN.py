@@ -77,3 +77,5 @@ def bn_rnn(x, name_scope, training, epsilon=1e-3, decay=0.999):
     '''Assume 2d [batch, values] tensor'''
     with tf.variable_scope(name_scope):
         return batch_norm(inputs=x, scale=True, epsilon=epsilon, decay=decay, updates_collections=None, is_training=training)
+
+
