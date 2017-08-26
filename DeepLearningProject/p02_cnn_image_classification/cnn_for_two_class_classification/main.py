@@ -6,7 +6,7 @@ import tensorflow as tf
 from PIL import ImageGrab
 from drawnow import drawnow
 
-from p02_cnn_image_classification.cnn_for_two_class_classification.ensemble_cnn_model_bn import Model
+from DeepLearningProject.p02_cnn_image_classification.cnn_for_two_class_classification.ensemble_cnn_model_bn import Model
 
 batch_size = 100
 num_models = 5
