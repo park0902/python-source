@@ -75,49 +75,50 @@ print(len(mfccMean))
 
 for i in range(6):
     x_train.append(mfccMean[i])
-    if i % 2 != 0:
-        y_train.append([1, 0])
+    if i == 0 or i%2 ==0:
+        y_train.append(1)
     else:
-        y_train.append([0, 1])
+        y_train.append(0)
 
-for i in range(7, 11):
+for i in range(6, 10):
     x_test.append(mfccMean[i])
-    if i % 2 != 0:
-        y_test.append([1, 0])
+    if i%2==0:
+        y_test.append(1)
     else:
-        y_test.append([0, 1])
+        y_test.append(0)
 
 
 
 # list를 array로
-# x_train_array = np.asarray(x_train)
-# y_train_array = np.asarray(y_train)
-# x_test_array = np.asarray(x_test)
-# y_test_array = np.asarray(y_test)
+x_train_array = np.asarray(x_train)
+y_train_array = np.asarray(y_train)
+x_test_array = np.asarray(x_test)
+y_test_array = np.asarray(y_test)
 
-print(x_train)
+print(x_train_array.shape)
 print()
-print(y_train)
+print(y_train_array.shape)
 print()
-# print(x_test)
-# print()
-# print(y_test)
+print(x_test_array.shape)
+print()
+print(y_test_array.shape)
 
 
 
 import numpy as np
 import matplotlib.pyplot as plt
-# from sklearn import linear_model
-#
-#
-# logreg = linear_model.LogisticRegression()
+from sklearn import linear_model
 
-# we create an instance of Neighbours Classifier and fit the data.
-# logreg.fit(x_train, y_train_array)
-#
-# y_test_estimated = logreg.predict(x_test)
-#
-# print(y_test_estimated)
+
+logreg = linear_model.LogisticRegression()
+
+
+logreg.fit(x_train, y_train)
+
+y_test_estimated = logreg.predict(x_test)
+
+print(y_test_estimated)
+print(y_test_array)
 
 
 

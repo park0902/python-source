@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model, datasets
 """
 훈련 집합
-1 ~ 6	홀수  긁힘	[1]
-1 ~ 6	짝수  충격	[0]
+1 ~ 4	긁힘	[1,0]
+5 ~ 7	충격	[0,1]
 
 
 테스트 집합
-7 ~ 10	홀수  긁힘	[1]
-7 ~ 10	짝수  충격	[0]
+8 ~ 10	긁힘	[1,0]
+11 ~ 12	충격	[0,1]
 
 """
 
@@ -54,7 +54,7 @@ for i in range(10):
 
 # mfccMean의 shape을 확인하기.
 
-# mfccMeanArray = np.asarray(mfccMean)
+mfccMeanArray = np.asarray(mfccMean)
 # print("mfccMeanArray shape : ", mfccMeanArray.shape)
 # print("mfccMeanArray[0][0] :", mfccMeanArray[0][0])
 # print(mfccMeanArray)
@@ -70,54 +70,103 @@ x_train = []
 y_train = []
 x_test = []
 y_test = []
+print(len(mfccMean))
 
-print(mfccMean)
-for i in range(1,6):
+
+for i in range(6):
     x_train.append(mfccMean[i])
-    # print(mfccMean[i])
-    if i % 2 !=0:
+    if i == 0 or i%2 ==0:
         y_train.append(1)
     else:
         y_train.append(0)
 
-# for i in range(7, 11):
-#     x_test.append(mfccMean[i])
-#     if i==7 or i==9:
-#         y_test.append(1)
-#     else:
-#         y_test.append(0)
-#
+for i in range(6, 10):
+    x_test.append(mfccMean[i])
+    if i%2==0:
+        y_test.append(1)
+    else:
+        y_test.append(0)
+
 
 
 # list를 array로
-# x_train_array = np.asarray(x_train)
-# y_train_array = np.asarray(y_train)
-# x_test_array = np.asarray(x_test)
-# y_test_array = np.asarray(y_test)
+x_train_array = np.asarray(x_train)
+y_train_array = np.asarray(y_train)
+x_test_array = np.asarray(x_test)
+y_test_array = np.asarray(y_test)
 
-print(x_train)
+print(x_train_array)
+print(x_train_array.shape)
 print()
-print(y_train)
+print(y_train_array)
+print(y_train_array.shape)
 print()
-print(x_test)
+print(x_test_array)
+print(x_test_array.shape)
 print()
-print(y_test)
+print(y_test_array)
+print(y_test_array.shape)
+print()
+#
 
 
 
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from sklearn import linear_model
-#
-#
-# logreg = linear_model.LogisticRegression()
 
-# we create an instance of Neighbours Classifier and fit the data.
-# logreg.fit(x_train, y_train_array)
-#
-# y_test_estimated = logreg.predict(x_test)
-#
-# print(y_test_estimated)
+# re_y = []
+# re_sr = []
+
+re_yt, re_srt = librosa.load('D:\park\Logistic_music\\Scratch6.WAV')
+# re_y.append(re_yt)
+# re_sr.append(re_srt)
+
+# mfcc 변환. 오디오 신호를 mfcc로 바꾼다.
+# re_mfcc = []
+
+# n_mfcc를 784가 아닌 25로 한다.
+
+re_mfcc = librosa.feature.mfcc(y=re_yt, sr=re_srt, n_mfcc=20)
+
+# shape 확인을 위한 과정
+# print("mfcc.shape : ", mfcc.shape) 를 실행하면 AttributeError: 'list' object has no attribute 'shape'
+# print("mfcc len : ", len(mfcc))
+# print("mfcc[0].shape : ", mfcc[0].shape)
+
+# 200행의 입력 파일이 존재, 25열의 변수, 각 변수 하나는 31개의 수치로 구성.
+
+# 데이터 처리를 용이하게 하기 위해 평균을 사용한다.
+# 31개로 이루어진 부분을 평균을 내야 한다.
+
+re_mfccMean = np.mean(re_mfcc, axis = 1)
+re_test_array = [1]
+
+re_test_array = np.asarray(re_test_array)
+re_mfccMean = np.asarray(re_mfccMean).reshape(1,20)
+
+print(re_test_array.shape)
+print(re_mfccMean.shape)
+print(re_mfccMean)
+
+
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+
+
+logreg = linear_model.LogisticRegression()
+
+
+logreg.fit(x_train, y_train)
+
+y_test_estimated = logreg.predict(re_mfccMean)
+
+print('예측')
+print(y_test_estimated)
+print()
+print('실제')
+print(re_test_array)
 
 
 
