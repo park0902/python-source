@@ -70,7 +70,7 @@ x_train = []
 y_train = []
 x_test = []
 y_test = []
-print(len(mfccMean))
+# print(len(mfccMean))
 
 
 for i in range(6):
@@ -95,19 +95,27 @@ y_train_array = np.asarray(y_train)
 x_test_array = np.asarray(x_test)
 y_test_array = np.asarray(y_test)
 
-print(x_train_array)
+# print(x_train_array)
 print(x_train_array.shape)
-print()
-print(y_train_array)
-print(y_train_array.shape)
-print()
-print(x_test_array)
+# print()
+# print(y_train_array)
+# print(y_train_array.shape)
+# print()
+# print(x_test_array)
 print(x_test_array.shape)
-print()
-print(y_test_array)
-print(y_test_array.shape)
-print()
-#
+# print()
+# print(y_test_array)
+# print(y_test_array.shape)
+# print()
+
+
+
+
+x_train_array = x_train_array.reshape(-1,2,3,1)
+x_test_array = x_test_array.reshape(-1,2,2,1)
+
+print(x_train_array)
+print(x_test_array.shape)
 
 
 
@@ -115,7 +123,7 @@ print()
 # re_y = []
 # re_sr = []
 
-re_yt, re_srt = librosa.load('D:\park\Logistic_music\\Scratch6.WAV')
+# re_yt, re_srt = librosa.load('D:\park\Logistic_music\\Scratch6.WAV')
 # re_y.append(re_yt)
 # re_sr.append(re_srt)
 
@@ -124,7 +132,7 @@ re_yt, re_srt = librosa.load('D:\park\Logistic_music\\Scratch6.WAV')
 
 # n_mfcc를 784가 아닌 25로 한다.
 
-re_mfcc = librosa.feature.mfcc(y=re_yt, sr=re_srt, n_mfcc=20)
+# re_mfcc = librosa.feature.mfcc(y=re_yt, sr=re_srt, n_mfcc=20)
 
 # shape 확인을 위한 과정
 # print("mfcc.shape : ", mfcc.shape) 를 실행하면 AttributeError: 'list' object has no attribute 'shape'
@@ -136,90 +144,44 @@ re_mfcc = librosa.feature.mfcc(y=re_yt, sr=re_srt, n_mfcc=20)
 # 데이터 처리를 용이하게 하기 위해 평균을 사용한다.
 # 31개로 이루어진 부분을 평균을 내야 한다.
 
-re_mfccMean = np.mean(re_mfcc, axis = 1)
-re_test_array = [1]
+# re_mfccMean = np.mean(re_mfcc, axis = 1)
+# re_test_array = [1]
+#
+# re_test_array = np.asarray(re_test_array)
+# re_mfccMean = np.asarray(re_mfccMean).reshape(1,20)
 
-re_test_array = np.asarray(re_test_array)
-re_mfccMean = np.asarray(re_mfccMean).reshape(1,20)
-
-print(re_test_array.shape)
-print(re_mfccMean.shape)
-print(re_mfccMean)
-
-
-
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn import linear_model
-
-
-logreg = linear_model.LogisticRegression()
-
-
-logreg.fit(x_train, y_train)
-
-y_test_estimated = logreg.predict(re_mfccMean)
-
-print('예측')
-print(y_test_estimated)
-print()
-print('실제')
-print(re_test_array)
+# print(re_test_array.shape)
+# print(re_mfccMean.shape)
+# print(re_mfccMean)
 
 
 
 
 
-
-
-
-
-
-# x_train_array = x_train_array.reshape(-1, 5, 5, 1)
-# x_test_array = x_test_array.reshape(-1, 5, 5, 1)
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from sklearn import linear_model
 #
 #
-# print("x_train_array : ", x_train_array.shape)
-# print("y_train_array : ", y_train_array.shape)
-# print("x_test_array : ", x_test_array.shape)
-# print("y_test_array : ", y_test_array.shape)
+# logreg = linear_model.LogisticRegression()
 #
 #
+# logreg.fit(x_train, y_train)
 #
-# # import some data to play with
-# iris = datasets.load_iris()
-# X = iris.data[:, :2]  # we only take the first two features.
-# Y = iris.target
+# y_test_estimated = logreg.predict(re_mfccMean)
 #
-# h = .02  # step size in the mesh
-#
-# logreg = linear_model.LogisticRegression(C=1e5)
-#
-# # we create an instance of Neighbours Classifier and fit the data.
-# logreg.fit(X, Y)
-#
-# # Plot the decision boundary. For that, we will assign a color to each
-# # point in the mesh [x_min, x_max]x[y_min, y_max].
-# x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
-# y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
-# xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-# Z = logreg.predict(np.c_[xx.ravel(), yy.ravel()])
-#
-# # Put the result into a color plot
-# Z = Z.reshape(xx.shape)
-# plt.figure(1, figsize=(4, 3))
-# plt.pcolormesh(xx, yy, Z, cmap=plt.cm.Paired)
-#
-# # Plot also the training points
-# plt.scatter(X[:, 0], X[:, 1], c=Y, edgecolors='k', cmap=plt.cm.Paired)
-# plt.xlabel('Sepal length')
-# plt.ylabel('Sepal width')
-#
-# plt.xlim(xx.min(), xx.max())
-# plt.ylim(yy.min(), yy.max())
-# plt.xticks(())
-# plt.yticks(())
-#
-# plt.show()
+# print('예측')
+# print(y_test_estimated)
+# print()
+# print('실제')
+# print(re_test_array)
+
+
+
+
+
+
+
+
+
+
