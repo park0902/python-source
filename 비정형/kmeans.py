@@ -4,17 +4,16 @@ import tensorflow as tf
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+# data = np.loadtxt('D:\park\비정형\\datatest.csv', delimiter=" ", dtype=np.int32)
 data = np.loadtxt('D:\park\비정형\\xxx1515460251015.csv', delimiter=" ", dtype=np.int32)
 x = data[:,0:-1]    # from 1st to (n-1)th column, when data has n columns
 y = data[:,[-1]]    # nth column, when data han n columns
 
-num_vectors = x.size
-num_clusters = 16
+# num_vectors = x.size
+num_clusters = 9
 num_steps = 100
 vector_values = data
-
+# print(num_vectors, vector_values)
 vectors = vector_values # tf.constant(vector_values)
 #centroids = tf.Variable(tf.slice(tf.random_shuffle(vectors), [0,0], [num_clusters,-1]))
 centroids = tf.Variable(tf.slice(vectors, [0,0], [num_clusters,-1]))
@@ -48,7 +47,7 @@ for step in range(num_steps):
 
 print("Centroids")
 for i in range(len(centroid_values)):
-	print(centroid_values[i])
+    print(centroid_values[i])
 
 print()
 
@@ -66,9 +65,9 @@ print(data["y"])
 print("CValues");
 print(data["cluster"])
 
-df = pd.DataFrame(data)
-sns.lmplot("x", "y", data=df, fit_reg=False, size=7, hue="cluster", legend=False)
-plt.show()
+# df = pd.DataFrame(data)
+# sns.lmplot("x", "y", data=df, fit_reg=False, size=7, hue="cluster", legend=False)
+# plt.show()
 
 
 

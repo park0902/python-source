@@ -131,21 +131,15 @@
 
 
 
-import pymysql
+# from librosa import load, util, display, core, stft, feature
+import numpy as np
+import matplotlib.pyplot as plt
+import librosa
 
-# MySQL Connection 연결
-db = pymysql.connect(host='localhost', port=3306, user='root', passwd='!a1s2d3f4', db='test', charset='utf8')
 
-# Connection 으로부터 Cursor 생성
-cursor = db.cursor()
 
-# SQL문 실행
-sql = "SELECT  VERSION()"
-cursor.execute(sql)
+y, sr = librosa.load("D:\park\music\\rainbow.mp3")
 
-# 데이터 Fetch
-data = cursor.fetchone()
-print("Database version : %s " % data)
+print(y, sr)
 
-# Connection 닫기
-db.close()
+
