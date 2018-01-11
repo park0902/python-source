@@ -182,16 +182,16 @@ print()
 
 ############################################################################################
 # URL
-url = 'http://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=105&oid=014&aid=0003899247'
-textrank = TextRank(url)
-
-print("Summary")
-for row in textrank.summarize(5):
-    print()
-    print(row)
-
-print()
-print('keywords : ', textrank.keywords())
+# url = 'http://news.naver.com/main/read.nhn?mode=LSD&mid=shm&sid1=105&oid=014&aid=0003899247'
+# textrank = TextRank(url)
+#
+# print("Summary")
+# for row in textrank.summarize(5):
+#     print()
+#     print(row)
+#
+# print()
+# print('keywords : ', textrank.keywords())
 
 #############################################################################################
 # TXT
@@ -211,16 +211,16 @@ print('keywords : ', textrank.keywords())
 
 ##############################################################################################
 # DOCX
-import docx2txt as docx
-
-docx_ = docx.process('D:\park\TextRank\\TextRank 조사 _v0.1.docx')
-
-textrank = TextRank(docx_)
-
-print("Summary")
-for row in textrank.summarize(5):
-    print()
-    print(row)
-
-print()
-print('keywords : ', textrank.keywords())
+# import docx2txt as docx
+#
+# docx_ = docx.process('D:\park\TextRank\\TextRank 조사 _v0.1.docx')
+#
+# textrank = TextRank(docx_)
+#
+# print("Summary")
+# for row in textrank.summarize(5):
+#     print()
+#     print(row)
+#
+# print()
+# print('keywords : ', textrank.keywords())

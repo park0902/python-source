@@ -45,6 +45,7 @@ sess.run(init_op)
 for step in range(num_steps):
    _, centroid_values, assignment_values = sess.run([update_centroids, centroids, assignments])
 
+
 print("Centroids")
 for i in range(len(centroid_values)):
     print(centroid_values[i])
