@@ -142,7 +142,33 @@ if __name__ == '__main__':
 
 
 
+import librosa
+import librosa.display as dp
+import matplotlib.pyplot as plt
+import numpy as np
 
+video_file_path = '/root/test/mp4_test.mp4'
+y, sr= librosa.load(video_file_path)
+
+mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+mfccmean = np.mean(mfcc, axis=1)
+
+print("---mfcc---")
+print(mfcc)
+
+print("--- mfcc mean ---")
+print(mfccmean)
+
+plt.figure(figsize=(10,4))
+dp.waveplot(y=y, sr=sr)
+plt.title('mp4 Wave Graph')
+plt.show()
+
+plt.figure(figsize=(10,4))
+dp.specshow(mfcc, x_axis='time')
+plt.colorbar()
+plt.title('mp4 Spactogram Graph')
+plt.show()
 
 
 
