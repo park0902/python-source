@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load audio from file
-video_file_path = "D:\park\music\The_Power_of_Teamwork_-_Funny_Animation.mp4"
+video_file_path = "D:\park\\002-UrbanSoundData\\audio\\fold1\\57320-0-0-7.wav"
 y, sr = librosa.load(video_file_path)
 mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
 
