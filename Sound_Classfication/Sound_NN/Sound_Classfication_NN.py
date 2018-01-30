@@ -1,3 +1,4 @@
+# 라이브러리 로드
 import glob
 import librosa
 import tensorflow as tf
@@ -47,7 +48,7 @@ sd = 1 / np.sqrt(n_dim)
 confusion_mat = np.zeros((10, 10))
 
 
-# 입/출력 레이어 설정
+# 입/출력층 레이어 초기 설정
 X = tf.placeholder(tf.float32, [None, n_dim])
 Y = tf.placeholder(tf.float32, [None, n_classes])
 
@@ -66,12 +67,12 @@ W_3 = tf.Variable(tf.random_normal([n_hidden_units_two, n_hidden_units_three], m
 b_3 = tf.Variable(tf.random_normal([n_hidden_units_three], mean=0, stddev=sd), name="b3")
 h_3 = tf.nn.sigmoid(tf.matmul(h_2, W_3) + b_3)
 
-# 출력 레이어
+# 출력층 레이어
 W = tf.Variable(tf.random_normal([n_hidden_units_three, n_classes], mean=0, stddev=sd), name="W")
 b = tf.Variable(tf.random_normal([n_classes], mean=0, stddev=sd), name="b")
 y_ = tf.nn.softmax(tf.matmul(h_3, W) + b)
 
-# 비용함수
+# 비용함수(손실함수)
 cost_funtion = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(y_), reduction_indices=[1]))
 
 # 최적화 함수
@@ -90,7 +91,7 @@ saver = tf.train.Saver()
 # 모든 변수 초기화
 init = tf.global_variables_initializer()
 
-# Tensorflow 학습 시작 및 정확도 계산
+# Tensorflow 학습 시작 및 정확도 계산, 학습 모델 저장
 with tf.Session() as sess:
     stime = time.time()
     sess.run(init)
