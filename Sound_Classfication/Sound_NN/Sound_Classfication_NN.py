@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import time
 
+
 # Sound Names
 sound_names = ["air conditioner","car horn","children playing","dog bark","drilling","engine idling",
                "gun shot","jackhammer","siren","street music"]
@@ -37,13 +38,13 @@ X_train, X_val, y_train, y_val = train_test_split(X_sub, y_sub, test_size=0.2)
 # print(X_data.shape, y_data.shape)
 
 # 모델링 변수
-training_epochs = 1000
+training_epochs = 10000
 n_dim = 193
 n_classes = 10
 n_hidden_units_one = 300
 n_hidden_units_two = 200
 n_hidden_units_three = 100
-learning_rate = 0.1
+learning_rate = 0.001
 sd = 1 / np.sqrt(n_dim)
 confusion_mat = np.zeros((10, 10))
 
@@ -98,16 +99,24 @@ with tf.Session() as sess:
     for epoch in range(0, training_epochs+1):
         sstime = time.time()
         _, cost = sess.run([optimizer, cost_funtion], feed_dict={X: X_sub, Y: y_sub})
-        if epoch % 100 == 0:
+        if epoch % 1000 == 0:
             print(epoch, sess.run([cost_funtion], feed_dict={X: X_sub, Y: y_sub}))
 
         cost_history = np.append(cost_history, cost)
-    print("Valdation Accuracy : ", round(sess.run(accuracy, feed_dict={X: X_test, Y: y_test}), 3))
+    print("Test Accuracy : ", round(sess.run(accuracy, feed_dict={X: X_test, Y: y_test}), 3))
+    print("Train Accuracy : ", round(sess.run(accuracy, feed_dict={X: X_train, Y: y_train}), 3))
+    print("validation Accuracy : ", round(sess.run(accuracy, feed_dict={X: X_val, Y: y_val}), 3))
     etime = time.time()
     print('consumption time : ', round(etime-stime, 6))
 
     # 학습된 모델(.ckpt) 저장
-    saver.save(sess, "D:\\park\\Python_Project\\py-github_project\\python-source\\Sound_Data\\\model_B\\model_B.ckpt")
+    saver.save(sess, "D:\\park\\Python_Project\\20180131\model_A(0.1)_all_10000\\model_A(0.1)_all_10000.ckpt")
 
 
+fig = plt.figure(figsize=(10,8))
+plt.plot(cost_history)
+plt.ylabel("Cost")
+plt.xlabel("Epoch")
+plt.axis([0,training_epochs,0,np.max(cost_history)])
+plt.show()
 
