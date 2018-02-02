@@ -56,7 +56,18 @@ sound_data = np.load('D:\\park\\urban_sound.npz')
 X_data = sound_data['X']
 y_data = sound_data['y']
 new_y_data = []
+new_X_data = []
 
+for i in range(len(X_data)):
+    if (np.argmax(y_data[i]) == 0) or (np.argmax(y_data[i]) ==2) or \
+            (np.argmax(y_data[i]) == 3) or (np.argmax(y_data[i]) ==4) or\
+            (np.argmax(y_data[i]) == 5) or (np.argmax(y_data[i]) ==7) or\
+            (np.argmax(y_data[i]) == 8) or (np.argmax(y_data[i]) ==9):
+        new_X_data.append(X_data[i])
+new_X_data = np.array(new_X_data)
+
+print(new_X_data.shape)
+print(new_X_data)
 
 for i in range(len(y_data)):
     if (np.argmax(y_data[i]) == 0) or (np.argmax(y_data[i]) ==2) or \
@@ -66,7 +77,8 @@ for i in range(len(y_data)):
         new_y_data.append(y_data[i])
 new_y_data = np.array(new_y_data)
 
-
+print(new_y_data.shape)
+print(new_y_data)
 
 # for i in range(len(y_data)):
 #     if np.argmax(y_data[i]) == 6:
