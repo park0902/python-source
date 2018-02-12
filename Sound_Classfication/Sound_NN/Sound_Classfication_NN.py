@@ -183,13 +183,13 @@ X_train, X_val, y_train, y_val = train_test_split(X_sub, y_sub, test_size=0.2)
 # 모델링 변수
 training_epochs = 6000
 n_dim = 193
-n_classes = 8
+n_classes = 10
 n_hidden_units_one = 300
 n_hidden_units_two = 200
 n_hidden_units_three = 100
 learning_rate = 0.1
 sd = 1 / np.sqrt(n_dim)
-confusion_mat = np.zeros((10, 10))
+
 
 
 # 입/출력층 레이어 초기 설정

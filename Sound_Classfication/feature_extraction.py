@@ -50,3 +50,58 @@ for i in range(9):
 
 
 
+
+
+import librosa
+import librosa.display as dp
+import matplotlib.pyplot as plt
+import numpy as np
+
+video_file_path = "/root/test/wma_test.wma"
+
+y, sr = librosa.load(video_file_path)
+
+stft = np.abs(librosa.stft(y))
+mfcc = np.mean(librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40).T, axis=0)
+chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sr).T, axis=0)
+mel = np.mean(librosa.feature.melspectrogram(y=y, sr=sr).T, axis=0)
+contrast = np.mean(librosa.feature.spectral_contrast(S=stft, sr=sr).T, axis=0)
+tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr).T, axis=0)
+
+#mfccmean = np.mean(mfcc, axis=1)
+print("---mfcc---")
+print(mfcc)
+print(len(mfcc))
+
+print("---chroma---")
+print(chroma)
+print(len(chroma))
+
+print("---mel---")
+print(mel)
+print(len(mel))
+
+print("---contrast---")
+print(contrast)
+print(len(contrast))
+
+print("---tonnetz---")
+print(tonnetz)
+print(len(tonnetz))
+
+print(len(mfcc)+len(chroma)+len(mel)+len(contrast)+len(tonnetz))
+
+plt.figure(figsize=(10,4))
+dp.waveplot(y=y, sr=sr)
+plt.title('avi Wave Graph')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10,4))
+dp.specshow(mfcc, x_axis='time')
+plt.title('avi Spactogram Graph')
+plt.colorbar()
+plt.tight_layout()
+plt.show()
+
+
