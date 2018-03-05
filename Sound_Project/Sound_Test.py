@@ -5,7 +5,7 @@ import os
 import librosa
 librosa.util.example_audio_file()
 ################## 플레이 정보 ##################
-file_loc = 'D:\park\music'      # 노래 폴더 위치
+file_loc = 'D:\park\ccd_sound'      # 노래 폴더 위치
 show_graph = True              # 그래프 출력
 ###############################################
 
@@ -54,7 +54,7 @@ class Sound(object):
             full_filename = os.path.join(dirname, filename) # full_filename = 경로+파일이름
             ext = os.path.splitext(full_filename)[-1]       # ext에 확장자 넣기
             file = os.path.splitext(filename)[0]            # file에 확장자를 제외한 파일이름만 넣기
-            if ext == '.mp3':                               # 확장자가 WAV 인 파일만 sound_dict 딕셔너리에 넣기
+            if ext == '.wav':                               # 확장자가 WAV 인 파일만 sound_dict 딕셔너리에 넣기
                 sound_dict[file] = full_filename            # 파일이름(key), 경로+파일이름(value)
         return sound_dict                                   # sound_dict 딕셔너리 리턴
 
@@ -81,8 +81,8 @@ class Sound(object):
             plt.colorbar()
             plt.title('{} Mfcc Graph'.format(self.music))
             plt.tight_layout()
-            # plt.savefig('D:\park\sound\\'+self.music+'_mfcc'+ '.png')
-            plt.show()
+            plt.savefig('D:\park\ccd_sound_data\\'+self.music+'_mfcc'+ '.png')
+            # plt.show()
 
     def _Wave(self, y, sr, show=False):
         if show == True:
@@ -92,8 +92,8 @@ class Sound(object):
             # plt.plot([-0.005] * len(y))
             plt.title('{} Wave Graph'.format(self.music))
             plt.tight_layout()
-            # plt.savefig('D:\park\sound\\'+self.music+'_wave'+'.png')
-            plt.show()
+            plt.savefig('D:\park\ccd_sound_data\\'+self.music+'_wave'+'.png')
+            # plt.show()
 
     def _Spactogram(self, d, show=False):
         if show == True:
@@ -102,8 +102,8 @@ class Sound(object):
             plt.colorbar()
             plt.title('{} Spactogram Graph'.format(self.music))
             plt.tight_layout()
-            # plt.savefig('D:\park\sound\\'+self.music+'_spactogram'+ '.png')
-            plt.show()
+            plt.savefig('D:\park\ccd_sound_data\\'+self.music+'_spactogram'+ '.png')
+            # plt.show()
 
     def _Chromagram(self, chroma, show=False):
         if show == True:
@@ -112,12 +112,12 @@ class Sound(object):
             plt.colorbar()
             plt.title('{} Chromagram Graph'.format(self.music))
             plt.tight_layout()
-            # plt.savefig('D:\park\sound\\'+self.music+'_Chromagram'+ '.png')
-            plt.show()
+            plt.savefig('D:\park\ccd_sound_data\\'+self.music+'_Chromagram'+ '.png')
+            # plt.show()
 
 
     def _Save(self):
-        np.savetxt("D:\park\sound\\"+self.music+"_mfcc.csv", self.mfccs, delimiter=",")
+        np.savetxt("D:\park\ccd_sound_data\\"+self.music+"_mfcc.csv", self.mfccs, delimiter=",")
 
 
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     while True:
         sound = Sound()
         sound._LoadSong()
-        # sound._Save()
+        sound._Save()
         cnt += 1
         if cnt == len(sound.music_dict):
             break
@@ -142,33 +142,33 @@ if __name__ == '__main__':
 
 
 
-import librosa
-import librosa.display as dp
-import matplotlib.pyplot as plt
-import numpy as np
-
-video_file_path = '/root/test/mp4_test.mp4'
-y, sr= librosa.load(video_file_path)
-
-mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
-mfccmean = np.mean(mfcc, axis=1)
-
-print("---mfcc---")
-print(mfcc)
-
-print("--- mfcc mean ---")
-print(mfccmean)
-
-plt.figure(figsize=(10,4))
-dp.waveplot(y=y, sr=sr)
-plt.title('mp4 Wave Graph')
-plt.show()
-
-plt.figure(figsize=(10,4))
-dp.specshow(mfcc, x_axis='time')
-plt.colorbar()
-plt.title('mp4 Spactogram Graph')
-plt.show()
-
+# import librosa
+# import librosa.display as dp
+# import matplotlib.pyplot as plt
+# import numpy as np
+#
+# video_file_path = '/root/test/mp4_test.mp4'
+# y, sr= librosa.load(video_file_path)
+#
+# mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+# mfccmean = np.mean(mfcc, axis=1)
+#
+# print("---mfcc---")
+# print(mfcc)
+#
+# print("--- mfcc mean ---")
+# print(mfccmean)
+#
+# plt.figure(figsize=(10,4))
+# dp.waveplot(y=y, sr=sr)
+# plt.title('mp4 Wave Graph')
+# plt.show()
+#
+# plt.figure(figsize=(10,4))
+# dp.specshow(mfcc, x_axis='time')
+# plt.colorbar()
+# plt.title('mp4 Spactogram Graph')
+# plt.show()
+#
 
 

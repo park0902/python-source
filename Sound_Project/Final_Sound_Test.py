@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 ################## 플레이 정보 ##################
-file_loc = '/root/test'      # 노래 폴더 위치
+file_loc = 'D:\park\ccd_sound'      # 노래 폴더 위치
 show_graph = False              # 그래프 출력
 ###############################################
 
@@ -52,7 +52,7 @@ class Sound(object):
             full_filename = os.path.join(dirname, filename) # full_filename = 경로+파일이름
             ext = os.path.splitext(full_filename)[-1]       # ext에 확장자 넣기
             file = os.path.splitext(filename)[0]            # file에 확장자를 제외한 파일이름만 넣기
-            if ext == '.WAV':                               # 확장자가 WAV 인 파일만 sound_dict 딕셔너리에 넣기
+            if ext == '.wav':                               # 확장자가 WAV 인 파일만 sound_dict 딕셔너리에 넣기
                 sound_dict[file] = full_filename            # 파일이름(key), 경로+파일이름(value)
         return sound_dict                                   # sound_dict 딕셔너리 리턴
 
@@ -122,6 +122,8 @@ class Sound(object):
         self.mfccMean = np.mean(self.mfccs, axis=1)
         print(self.mfccMean)
 
+    def _MfccMeanSave(self):
+        np.savetxt("D:\park\ccd_sound_data\\"+self.music+"_mfccMean.csv", self.mfccMean, delimiter=",")
 
 
 ################# 메인 실행절 ########################
@@ -139,6 +141,7 @@ if __name__ == '__main__':
         sound._LoadSong()
         # sound._Save()
         sound._MfccMean()
+        # sound._MfccMeanSave()
         cnt += 1
         if cnt == len(sound.music_dict):
             break
