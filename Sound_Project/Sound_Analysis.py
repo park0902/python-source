@@ -10,7 +10,9 @@
 
 from librosa import display
 import librosa
+import librosa.display as dp
 import numpy as np
+import matplotlib.pyplot as plt
 
 # for i in range(0,7):
 #     y, sr = librosa.load('D:\park\\new_sound\\2018-0-3-'+str(i)+'.wav', sr=22050)
@@ -23,20 +25,23 @@ import numpy as np
 #     wave = display.waveplot(y, sr)
 #     print(wave)
 
-
-for i in range(0,1):
+plt.figure(figsize=(10, 4))
+for i in range(0, 3):
     y, sr = librosa.load('D:\park\\new_sound\\2018-0-3-'+str(i)+'.wav')
-    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=100)
+    # mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=int(sr * 0.01), n_fft=int(sr * 0.02),n_mfcc=20).T
+    # mfcc_delta = librosa.feature.delta(mfccs)
+    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
     mfccMean = np.mean(mfccs, axis=1)
-    # chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-    # chroma_med = librosa.decompose.nn_filter(chroma, aggregate=np.median, metric='cosine')
     print(mfccMean[1])
-    # print(chroma.shape)
-    # print(chroma_med)
-    # print(chroma_med.shape)
-    # np.savetxt("D:\park\\new_sound\\"+"2018-0-3-"+str(i)+"_mfccMean(100).csv", mfccMean, delimiter=",")
-
-
+    # plt.figure(figsize=(10, 4))
+    plt.subplot(3,1,i+1)
+    dp.specshow(mfccs, x_axis='time')
+# plt.colorbar()
+# plt.subplot(2,1,2)
+# dp.specshow(mfcc_delta, x_axis='time')
+    plt.colorbar()
+    plt.tight_layout()
+    plt.show()
 
 # for i in range(0,19):
 #     y, sr = librosa.load('D:\park\ccd_sound\\2018-0-3-'+str(i)+'.wav')
