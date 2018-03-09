@@ -4,11 +4,12 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import time
-
+import tensorflow.contrib as con
 # sound_names = ["air conditioner","car horn","children playing","dog bark","drilling","engine idling",
 #                "gun shot","jackhammer","siren","street music"]
 
-sound_data = np.load('D:\park\ccd_sound_data\\ccd_sound.npz')
+# sound_data = np.load('D:\park\ccd_sound_data\\ccd_sound.npz')
+sound_data = np.load('D:\park\\urban_sound.npz')
 X_data = sound_data['X']
 y_data = sound_data['y']
 
@@ -29,9 +30,9 @@ X_train, X_val, y_train, y_val = train_test_split(X_sub, y_sub, test_size=0.2)
 # print(len(y_train), len(y_val), len(y_test), len(y_sub))
 # print(X_data.shape, y_data.shape)
 
-training_epochs = 6000
+training_epochs = 500
 n_dim = 193
-n_classes = 4
+n_classes = 10
 n_hidden_units_one = 300
 n_hidden_units_two = 200
 n_hidden_units_three = 100
@@ -109,11 +110,10 @@ with tf.Session() as sess:
     print("validation Accuracy : ", round(sess.run(accuracy, feed_dict={X: X_val, Y: y_val}), 3))
     etime = time.time()
     print('consumption time : ', round(etime-stime, 6))
-    saver.save(sess, "D:\park\\20180305\\model_A(0.01)_he\\model_A(0.01)_he.ckpt")
-
-
-
-
+    saver.save(sess, "D:\park\\20180309\\model_A(0.01)_he\\model_A(0.01)_he.ckpt")
+    ensemble_confusion_mat = con.metrics.confusion_matrix(labels=tf.argmax(y_, 1), predictions=tf.argmax(Y, 1),
+                                                                        num_classes=10)
+    print(sess.run(ensemble_confusion_mat))
 
 
 
