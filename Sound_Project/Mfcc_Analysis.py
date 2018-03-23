@@ -42,3 +42,21 @@ for i in range(1,26):
     time_list.append(time)
 
 np.savetxt("D:\CCD_MFCC\\충격 sample_time.csv", time_list, delimiter=",")
+
+import librosa
+import numpy as np
+import sys
+import time
+
+
+
+
+y, sr = librosa.load("D:\sound\\Shock1.WAV")
+mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+mfccMean = np.mean(mfccs, axis=1)
+print(mfccMean[1])
+if mfccMean[1] <= 100:
+    print("Shock")
+else:
+    print("Scratch")
+
